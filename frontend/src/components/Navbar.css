@@ -1,0 +1,201 @@
+body {
+  margin: 0 !important;
+  font-family: 'Segoe UI', sans-serif !important;
+  background-color: #fff !important;
+  color: #333 !important;
+}
+
+.top-bar {
+  background-color: transparent !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  padding: 20px 30px 0 0 !important;
+  font-size: 18px !important;
+  gap: 10px !important;
+}
+
+.top-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 20px !important;
+}
+
+.language-switch,
+.dark-mode-toggle {
+  color: #de2222 !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  font-size: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  background: none !important;
+  border: none !important;
+}
+
+.navbar {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  background-color: #761616 !important;
+  padding: 0px 0px !important;
+  color: white !important;
+  flex-wrap: wrap !important;
+}
+
+.navbar-left {
+  flex-shrink: 0 !important;
+  min-width: 100px !important;
+}
+
+.navbar-logo {
+  height: 120px !important;
+  width: auto !important;
+  object-fit: contain !important;
+}
+
+.navbar-title {
+  font-size: 32px !important;
+  font-weight: bold !important;
+  color: white !important;
+  white-space: nowrap !important;
+}
+
+.navbar-links {
+  list-style: none !important;
+  display: flex !important;
+  gap: 35px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex-grow: 1 !important;
+  justify-content: center !important;
+}
+
+.navbar-links li a {
+  text-decoration: none !important;
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 18px !important;
+  padding: 10px 12px !important;
+  border-radius: 4px !important;
+  transition: background-color 0.3s ease !important;
+}
+
+.navbar-links li a:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.login-btn {
+  background-color: #f4f4f4 !important;
+  color: #3a0808 !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 10px 20px !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  transition: background-color 0.3s ease, color 0.3s ease !important;
+  text-decoration: none !important;
+  display: inline-block !important;
+}
+
+.login-btn:hover {
+  background-color: #523838 !important;
+  color: white !important;
+}
+
+.search-container {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 60px auto 30px !important;
+  gap: 0 !important;
+  max-width: 600px !important;
+}
+
+.search-input {
+  padding: 14px 20px !important;
+  width: 100% !important;
+  font-size: 16px !important;
+  border: 2px solid #a45858 !important;
+  border-top-left-radius: 6px !important;
+  border-bottom-left-radius: 6px !important;
+  outline: none !important;
+}
+
+.search-button {
+  background-color: #a45858 !important;
+  color: white !important;
+  border: none !important;
+  font-size: 18px !important;
+  padding: 14px 18px !important;
+  border-top-right-radius: 6px !important;
+  border-bottom-right-radius: 6px !important;
+  cursor: pointer !important;
+  transition: background-color 0.3s ease !important;
+}
+
+.search-button:hover {
+  background-color: #761616 !important;
+}
+
+body.dark-mode {
+  background-color: #121212 !important;
+  color: #f5f5f5 !important;
+}
+
+body.dark-mode .navbar {
+  background-color: #1e1e1e !important;
+}
+
+body.dark-mode .navbar-links li a {
+  color: #f5f5f5 !important;
+}
+
+body.dark-mode .login-btn {
+  background-color: #333 !important;
+  color: white !important;
+  border: 2px solid #555 !important;
+}
+
+body.dark-mode .login-btn:hover {
+  background-color: #555 !important;
+}
+
+body.dark-mode .search-input {
+  background-color: #1e1e1e !important;
+  color: white !important;
+  border-color: #444 !important;
+}
+
+body.dark-mode .search-button {
+  background-color: #333 !important;
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background-color: #a45858 !important;
+    padding: 20px 40px !important;
+    overflow: hidden !important;
+  }
+
+  .navbar-links {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .search-container {
+    flex-direction: column !important;
+    width: 90% !important;
+  }
+
+  .search-input,
+  .search-button {
+    width: 100% !important;
+    border-radius: 6px !important;
+  }
+}

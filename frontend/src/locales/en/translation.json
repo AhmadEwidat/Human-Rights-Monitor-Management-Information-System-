@@ -1,0 +1,20 @@
+{
+  "home": "Home",
+  "about": "About",
+  "howItWorks": "How It Works",
+  "submitReport": "Submit Report",
+  "contact": "Contact",
+  "faq": "FAQ",
+  "dashboard": "Dashboard",
+  "login": "Login",
+  "searchPlaceholder": "Search for a case .......",
+  "darkMode": "Dark Mode",
+  "lightMode": "Light Mode",
+   "loginTitle": " Login In",
+  "loginSubtitle": "Please log in as an authorized Investigator or Admin",
+  "username": "Username",
+  "password": "Password",
+  "remember": "Remember",
+  "forgot": "Forgot Password?",
+  "submit": "SUBMIT"
+}
