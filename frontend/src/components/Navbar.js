@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import './Navbar.css';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import logo from '../assets/logo.png'; // تأكد من المسار الصحيح
 
 function Navbar() {
   const [darkMode, setDarkMode] = useState(false);
   const { t, i18n } = useTranslation();
+  const location = useLocation();
 
   const toggleDarkMode = () => {
     document.body.classList.toggle('dark-mode');
@@ -50,30 +51,21 @@ function Navbar() {
         <span className="navbar-title">Monitor Palestine 360</span>
 
         <ul className="navbar-links">
-          <li><a href="#">{t('home')}</a></li>
-          <li><a href="#">{t('about')}</a></li>
-          <li><a href="#">{t('howItWorks')}</a></li>
-          <li><a href="#">{t('submitReport')}</a></li>
-          <li><a href="#">{t('contact')}</a></li>
-          <li><a href="#">{t('faq')}</a></li>
-          <li><a href="#">{t('dashboard')}</a></li>
+          <li><Link to="/">{t('home')}</Link></li>
+          <li><Link to="/about">{t('about')}</Link></li>
+          <li><Link to="/how-it-works">{t('howItWorks')}</Link></li>
+          <li><Link to="/submit-report">{t('submitReport')}</Link></li>
+          <li><Link to="/contact">{t('contact')}</Link></li>
+          <li><Link to="/faq">{t('faq')}</Link></li>
+          <li><Link to="/dashboard">{t('dashboard')}</Link></li>
         </ul>
 
-<Link to="/login" className="login-btn">
-  {t('login')}
-</Link>
-     </nav>
+        <Link to="/login" className="login-btn">
+          {t('login')}
+        </Link>
+      </nav>
 
-      <div className="search-container">
-        <input
-          type="text"
-          placeholder={t('searchPlaceholder')}
-          className="search-input"
-        />
-        <button className="search-button">
-          🔍
-        </button>
-      </div>
+     
     </>
   );
 }

@@ -19,4 +19,38 @@
   "remember": "تذكّرني",
   "forgot": "نسيت كلمة المرور؟",
   "submit": "تسجيل الدخول"
+  ,
+  "submitTitle": "قدم بلاغ عن انتهاكات الاحتلال في فلسطين",
+  "reporterType": "نوع المبلغ",
+  "victim": "الضحية",
+  "witness": "الشاهد",
+  "anonymousQuestion": "هل ترغب بالتبليغ كمجهول الهوية؟",
+  "pseudonym": "اسم مستعار (اختياري)",
+  "optionalAlias": "اسم مستعار أو لقب (اختياري)",
+  "email": "البريد الإلكتروني",
+  "phone": "رقم الهاتف",
+  "preferredContact": "طريقة التواصل المفضلة",
+  "violationDescription": "وصف الانتهاك",
+  "violationTypes": "أنواع الانتهاكات",
+  "country": "الدولة",
+  "city": "المدينة",
+  "coordinates": "الإحداثيات (خط العرض، خط الطول)",
+  "latitude": "خط العرض",
+  "longitude": "خط الطول",
+  "uploadEvidence": "إرفاق الأدلة",
+  "submitButton": "إرسال البلاغ",
+  "reportSuccess": "تم إرسال البلاغ بنجاح!",
+  "reportFailed": "فشل في إرسال البلاغ.",
+  "reportError": "حدث خطأ أثناء الإرسال."
+  ,
+  "placeholderEmail": "أدخل بريدك الإلكتروني هنا...",
+  "placeholderPhone": "أدخل رقم هاتفك للتواصل...",
+  "placeholderDescription": "وصف الانتهاك كما رأيته أو تعرضت له...",
+  "placeholderCountry": "اسم الدولة (مثلاً: فلسطين)",
+  "placeholderCity": "اسم المدينة أو القرية...",
+  "optionalAlias": "اسم مستعار إن رغبت"
+
+
+
+
 }

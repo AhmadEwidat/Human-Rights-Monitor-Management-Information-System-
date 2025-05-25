@@ -1,29 +1,29 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
-// استيراد المكونات والصفحات
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
-import AdminWelcome from './pages/AdminWelcome';          // صفحة ترحيب الأدمن
-import InvestigatorWelcome from './pages/InvestigatorWelcome'; // صفحة ترحيب المحقق
+import AdminWelcome from './pages/AdminWelcome';
+import InvestigatorWelcome from './pages/InvestigatorWelcome';
+import SubmitReportForm from './pages/SubmitReportForm';
 
-// هذا الكمبوننت يحدد متى يظهر الـ Navbar (يخفيه في صفحة اللوجين فقط)
+// ✅ لازم نفتح الدالة هنا
 function AppLayout() {
   const location = useLocation();
   const hideNavbarPaths = ['/login'];
 
   return (
     <>
-      {/* إذا لم يكن في صفحة اللوجين، أظهر الـ Navbar */}
       {!hideNavbarPaths.includes(location.pathname) && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/admin-welcome" element={<AdminWelcome />} />              {/* أدمن */}
-        <Route path="/investigator-welcome" element={<InvestigatorWelcome />} /> {/* محقق */}
+        <Route path="/admin-welcome" element={<AdminWelcome />} />
+        <Route path="/investigator-welcome" element={<InvestigatorWelcome />} />
+        <Route path="/submit-report" element={<SubmitReportForm />} />
       </Routes>
     </>
   );

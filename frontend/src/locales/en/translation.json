@@ -17,4 +17,40 @@
   "remember": "Remember",
   "forgot": "Forgot Password?",
   "submit": "SUBMIT"
+  ,
+  "submitTitle": "Submit a Report on Israeli Occupation Violations in Palestine",
+  "reporterType": "Reporter Type",
+  "victim": "Victim",
+  "witness": "Witness",
+  "anonymousQuestion": "Report anonymously?",
+  "pseudonym": "Pseudonym (Optional)",
+  "optionalAlias": "Optional alias or nickname",
+  "email": "Email",
+  "phone": "Phone",
+  "preferredContact": "Preferred Contact",
+  "violationDescription": "Violation Description",
+  "violationTypes": "Violation Types",
+  "country": "Country",
+  "city": "City",
+  "coordinates": "Coordinates (lat, lng)",
+  "latitude": "Latitude",
+  "longitude": "Longitude",
+  "uploadEvidence": "Upload Evidence",
+  "submitButton": "Submit Report",
+  "reportSuccess": "Report submitted successfully!",
+  "reportFailed": "Report submission failed.",
+  "reportError": "An error occurred during submission."
+  ,
+  "placeholderEmail": "Enter your email address...",
+  "placeholderPhone": "Enter your phone number for contact...",
+  "placeholderDescription": "Describe the violation as you witnessed or experienced it...",
+  "placeholderCountry": "Country name (e.g., Palestine)",
+  "placeholderCity": "City or village name...",
+  "optionalAlias": "Optional pseudonym if desired"
+
+
+
+
+
+
 }
