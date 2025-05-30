@@ -115,3 +115,24 @@ form button:hover {
   border-left: 4px solid #5e9268;
   padding-left: 10px;
 }
+/* تحسين مظهر حقل التاريخ */
+form input[type="date"] {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 16px 18px;
+  border: 2px solid #5e9268;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  font-size: 16px;
+  background-color: #fefefe;
+  color: #333;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+form input[type="date"]:focus {
+  border-color: #5e9268;
+  box-shadow: 0 0 0 3px rgba(94, 146, 104, 0.2);
+  outline: none;
+}

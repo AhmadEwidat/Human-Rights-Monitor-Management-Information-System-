@@ -7,6 +7,7 @@ function SubmitReportForm() {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [violationOptions, setViolationOptions] = useState([]);
 
+  // تحديث هيكل reportData ليتوافق مع الـ Backend
   const [reportData, setReportData] = useState({
     reporter_type: "victim",
     contact_info: {
@@ -16,16 +17,15 @@ function SubmitReportForm() {
     },
     incident_details: {
       date: "",
-      country: "",
-      city: "",
-      coordinates: { lat: "", lng: "" },
       description: "",
       violation_types: [],
+      location_str: "", // إضافة حقل location_str بدلاً من الإحداثيات اليدوية
     },
     pseudonym: "",
     evidence: [],
   });
 
+  // جلب أنواع الانتهاكات من الـ Backend
   useEffect(() => {
     fetch("http://localhost:8000/case-types")
       .then((res) => res.json())
@@ -39,6 +39,7 @@ function SubmitReportForm() {
       .catch(() => setViolationOptions([]));
   }, []);
 
+  // التعامل مع تغييرات الحقول
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name.startsWith("contact_info.")) {
@@ -58,34 +59,30 @@ function SubmitReportForm() {
     }
   };
 
+  // التعامل مع رفع الملفات
   const handleFileChange = (e) => {
     setReportData((prev) => ({ ...prev, evidence: e.target.files }));
   };
 
+  // إرسال النموذج إلى الـ Backend
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const userId = localStorage.getItem("user_id"); // ✅ جلب معرف المؤسسة
+    const userId = localStorage.getItem("user_id");
 
     const formData = new FormData();
     formData.append("anonymous", String(isAnonymous));
     formData.append("reporter_type", reportData.reporter_type);
-    formData.append("created_by", userId); // ✅ إرفاق المؤسسة الراسلة
+    formData.append("created_by", userId);
 
+    // تحديث incident_details ليشمل location_str
     const incident_details = {
       date: reportData.incident_details.date,
-      location: {
-        country: reportData.incident_details.country,
-        city: reportData.incident_details.city,
-        coordinates: {
-          lat: reportData.incident_details.coordinates.lat,
-          lng: reportData.incident_details.coordinates.lng,
-        }
-      },
       description: reportData.incident_details.description,
       violation_types: reportData.incident_details.violation_types,
     };
     formData.append("incident_details", JSON.stringify(incident_details));
+    formData.append("location_str", reportData.incident_details.location_str); // إضافة location_str
 
     if (!isAnonymous) {
       const contact_info = {
@@ -226,58 +223,21 @@ function SubmitReportForm() {
         </label>
 
         <label>
-          {t("country")}:
+          {t("location")}:
           <input
             type="text"
-            name="incident_details.country"
+            name="incident_details.location_str"
             onChange={handleChange}
-            placeholder={t("placeholderCountry")}
+            placeholder={t("placeholderLocation")} // مثال: "Taiz, Yemen"
           />
         </label>
 
         <label>
-          {t("city")}:
+          {t("date")}:
           <input
-            type="text"
-            name="incident_details.city"
+            type="date"
+            name="incident_details.date"
             onChange={handleChange}
-            placeholder={t("placeholderCity")}
-          />
-        </label>
-
-        <label>
-          {t("coordinates")}:
-          <input
-            type="text"
-            placeholder={t("latitude")}
-            onChange={(e) =>
-              setReportData((prev) => ({
-                ...prev,
-                incident_details: {
-                  ...prev.incident_details,
-                  coordinates: {
-                    ...prev.incident_details.coordinates,
-                    lat: e.target.value,
-                  },
-                },
-              }))
-            }
-          />
-          <input
-            type="text"
-            placeholder={t("longitude")}
-            onChange={(e) =>
-              setReportData((prev) => ({
-                ...prev,
-                incident_details: {
-                  ...prev.incident_details,
-                  coordinates: {
-                    ...prev.incident_details.coordinates,
-                    lng: e.target.value,
-                  },
-                },
-              }))
-            }
           />
         </label>
 

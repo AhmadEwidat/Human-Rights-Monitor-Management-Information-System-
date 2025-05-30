@@ -82,14 +82,27 @@
   "manageInstitutions": "إدارة المؤسسات",
   "viewReports": "عرض التقارير",
   "settings": "الإعدادات",
-  "logout": "تسجيل الخروج"
+  "logout": "تسجيل الخروج",
 
 
 
-
-
-
-
-
-
+  "location": "الموقع",
+  "placeholderLocation": "أدخل الموقع (مثال: تعز، اليمن)"
+,
+"reportsTitle": "قائمة التقارير",
+  "status": "الحالة",
+  "all": "الكل",
+  "new": "جديد",
+  "underInvestigation": "تحت التحقيق",
+  "resolved": "منتهي",
+  "startDate": "تاريخ البداية",
+  "endDate": "تاريخ النهاية",
+  "location": "الموقع",
+  "applyFilters": "تطبيق الفلاتر",
+  "incidentDetails": "تفاصيل الحادث",
+  "date": "التاريخ",
+  "loading": "جارٍ التحميل...",
+  "noReports": "لا توجد تقارير",
+  "fetchError": "خطأ أثناء جلب التقارير",
+  "reports": "التقارير"
 }

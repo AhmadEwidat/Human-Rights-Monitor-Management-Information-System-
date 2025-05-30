@@ -86,11 +86,29 @@
 
 
 
+  ,
+  "location": "Location",
+  "placeholderLocation": "Enter location (e.g., Taiz, Yemen)"
+,
+  "reportsTitle": "Reports List",
+  "status": "Status",
+  "all": "All",
+  "new": "New",
+  "underInvestigation": "Under Investigation",
+  "resolved": "Resolved",
+  "startDate": "Start Date",
+  "endDate": "End Date",
+  "location": "Location",
+  "applyFilters": "Apply Filters",
+  "incidentDetails": "Incident Details",
+  "date": "Date",
+  "loading": "Loading...",
+  "noReports": "No reports found",
+  "fetchError": "Error fetching reports",
 
-  
 
 
-
+"reports": "Reports"
 
 
 
