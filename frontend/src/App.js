@@ -10,7 +10,7 @@ import {
 import Navbar from './components/Navbar';
 import InstitutionNavbar from './components/InstitutionNavbar';
 import AdminNavbar from './components/AdminNavbar';
-
+import ReportsPage from './pages/ReportsPage';
 import Home from './pages/Home';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
@@ -56,6 +56,7 @@ function AppLayout() {
 
         {/* تأكد أن هذا هو الرابط المستخدم في NavLink */}
         <Route path="/institution-create-case" element={<SubmitReportForm />} />
+        <Route path="/reports" element={<ReportsPage />} />
       </Routes>
     </>
   );
