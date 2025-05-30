@@ -33,13 +33,21 @@ const LoginPage = () => {
         return;
       }
 
+      // ✅ تخزين التوكن
       localStorage.setItem("jwt_token", data.access_token);
 
+      // ✅ استخراج البيانات من التوكن
       const decoded = jwtDecode(data.access_token);
       const userRole = decoded.role ? decoded.role.toLowerCase() : "";
+      const userId = decoded.sub;
+      const usernameFromToken = decoded.username;
 
-      localStorage.setItem("username", username);
+      // ✅ تخزين البيانات في localStorage
+      localStorage.setItem("user_id", userId);
+      localStorage.setItem("username", usernameFromToken);
+      localStorage.setItem("role", userRole);
 
+      // ✅ التوجيه حسب الدور
       if (userRole === "admin") {
         navigate("/admin-welcome");
       } else if (userRole === "institution") {
@@ -70,25 +78,23 @@ const LoginPage = () => {
               <label><input type="checkbox" /> {t('remember')}</label>
               <a href="#" className="forgot-password">{t('forgot')}</a>
             </div>
-<button
-  type="submit"
-  style={{
-    backgroundColor: '#5e9268',
-    color: 'white',
-    padding: '15px',
-    border: 'none',
-    borderRadius: '30px',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    width: '100%',
-    transition: 'background-color 0.3s ease'
-  }}
->
-  {t('submit')}
-</button>
-
-
+            <button
+              type="submit"
+              style={{
+                backgroundColor: '#5e9268',
+                color: 'white',
+                padding: '15px',
+                border: 'none',
+                borderRadius: '30px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                width: '100%',
+                transition: 'background-color 0.3s ease'
+              }}
+            >
+              {t('submit')}
+            </button>
           </form>
         </div>
         <div className="login-right">

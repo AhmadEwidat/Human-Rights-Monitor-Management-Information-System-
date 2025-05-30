@@ -65,10 +65,12 @@ function SubmitReportForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData();
+    const userId = localStorage.getItem("user_id"); // ✅ جلب معرف المؤسسة
 
+    const formData = new FormData();
     formData.append("anonymous", String(isAnonymous));
     formData.append("reporter_type", reportData.reporter_type);
+    formData.append("created_by", userId); // ✅ إرفاق المؤسسة الراسلة
 
     const incident_details = {
       date: reportData.incident_details.date,
@@ -78,12 +80,6 @@ function SubmitReportForm() {
         coordinates: {
           lat: reportData.incident_details.coordinates.lat,
           lng: reportData.incident_details.coordinates.lng,
-          // أو لو تريد GeoJSON (احذف التعليق من السطرين بالأسفل)
-          // type: "Point",
-          // coordinates: [
-          //   Number(reportData.incident_details.coordinates.lng),
-          //   Number(reportData.incident_details.coordinates.lat)
-          // ]
         }
       },
       description: reportData.incident_details.description,
@@ -128,16 +124,17 @@ function SubmitReportForm() {
 
   return (
     <div className="report-form-container">
-      <h2 style={{ color: '#b30000' }}>{t("submitTitle")}</h2>
+      <h2>{t("submitTitle")}</h2>
       <form onSubmit={handleSubmit} encType="multipart/form-data">
-        <label style={{ marginBottom: "10px", color: "#b30000" }}>
+        <label>
           {t("reporterType")}:
           <select name="reporter_type" onChange={handleChange}>
             <option value="victim">{t("victim")}</option>
             <option value="witness">{t("witness")}</option>
           </select>
         </label>
-        <label style={{ marginBottom: "10px", color: "#b30000" }}>
+
+        <label>
           {t("anonymousQuestion")}
           <input
             type="checkbox"
@@ -145,8 +142,9 @@ function SubmitReportForm() {
             onChange={() => setIsAnonymous(!isAnonymous)}
           />
         </label>
+
         {isAnonymous && (
-          <label style={{ marginBottom: "10px", color: "#b30000" }}>
+          <label>
             {t("pseudonym")}:
             <input
               type="text"
@@ -156,9 +154,10 @@ function SubmitReportForm() {
             />
           </label>
         )}
+
         {!isAnonymous && (
           <>
-            <label style={{ marginBottom: "10px", color: "#b30000" }}>
+            <label>
               {t("email")}:
               <input
                 type="email"
@@ -167,7 +166,7 @@ function SubmitReportForm() {
                 placeholder={t("placeholderEmail")}
               />
             </label>
-            <label style={{ marginBottom: "10px", color: "#b30000" }}>
+            <label>
               {t("phone")}:
               <input
                 type="text"
@@ -176,7 +175,7 @@ function SubmitReportForm() {
                 placeholder={t("placeholderPhone")}
               />
             </label>
-            <label style={{ marginBottom: "10px", color: "#b30000" }}>
+            <label>
               {t("preferredContact")}:
               <select
                 name="contact_info.preferred_contact"
@@ -189,7 +188,8 @@ function SubmitReportForm() {
             </label>
           </>
         )}
-        <label style={{ marginBottom: "10px", color: "#b30000" }}>
+
+        <label>
           {t("violationDescription")}:
           <textarea
             name="incident_details.description"
@@ -197,7 +197,8 @@ function SubmitReportForm() {
             placeholder={t("placeholderDescription")}
           />
         </label>
-        <label style={{ marginBottom: "10px", color: "#b30000" }}>
+
+        <label>
           {t("violationTypes")}:
           <select
             multiple
@@ -223,7 +224,8 @@ function SubmitReportForm() {
               ))}
           </select>
         </label>
-        <label style={{ marginBottom: "10px", color: "#b30000" }}>
+
+        <label>
           {t("country")}:
           <input
             type="text"
@@ -232,7 +234,8 @@ function SubmitReportForm() {
             placeholder={t("placeholderCountry")}
           />
         </label>
-        <label style={{ marginBottom: "10px", color: "#b30000" }}>
+
+        <label>
           {t("city")}:
           <input
             type="text"
@@ -241,7 +244,8 @@ function SubmitReportForm() {
             placeholder={t("placeholderCity")}
           />
         </label>
-        <label style={{ marginBottom: "10px", color: "#b30000" }}>
+
+        <label>
           {t("coordinates")}:
           <input
             type="text"
@@ -276,7 +280,8 @@ function SubmitReportForm() {
             }
           />
         </label>
-        <label style={{ marginBottom: "10px", color: "#b30000" }}>
+
+        <label>
           {t("uploadEvidence")}:
           <input
             type="file"
@@ -286,6 +291,7 @@ function SubmitReportForm() {
             onChange={handleFileChange}
           />
         </label>
+
         <button type="submit">{t("submitButton")}</button>
       </form>
     </div>
