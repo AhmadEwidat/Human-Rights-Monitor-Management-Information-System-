@@ -47,6 +47,47 @@
   "placeholderCountry": "Country name (e.g., Palestine)",
   "placeholderCity": "City or village name...",
   "optionalAlias": "Optional pseudonym if desired"
+  ,
+  "home": "Home",
+  "browseViolations": "Browse Violations",
+  "howItWorks": "How It Works",
+  "about": "About",
+  "faq": "FAQ",
+  "contact": "Contact",
+  "institutionLogin": "Institution Login",
+  "darkMode": "Dark Mode",
+  "lightMode": "Light Mode"
+  ,
+  "home": "Home",
+  "browseViolations": "Browse Violations",
+  "howItWorks": "How it Works",
+  "about": "About",
+  "faq": "FAQ",
+  "contact": "Contact",
+  "institutionLogin": "Institution Login",
+
+  "dashboard": "Dashboard",
+  "createCase": "Create Case",
+  "myCases": "My Cases",
+  "reports": "Reports",
+  "profile": "Profile",
+  "settings": "Settings",
+  "logout": "Logout",
+
+  "lightMode": "Light Mode",
+  "darkMode": "Dark Mode"
+,
+  "dashboard": "Dashboard",
+  "manageInstitutions": "Manage Institutions",
+  "viewReports": "View Reports",
+  "settings": "Settings",
+  "logout": "Logout"
+
+
+
+
+
+  
 
 
 

@@ -13,7 +13,6 @@
 
   
 "loginTitle": "تسجيل الدخول",
-  "loginSubtitle": "يرجى تسجيل الدخول كمحقق أو مسؤول نظام",
   "username": "اسم المستخدم",
   "password": "كلمة المرور",
   "remember": "تذكّرني",
@@ -49,6 +48,46 @@
   "placeholderCountry": "اسم الدولة (مثلاً: فلسطين)",
   "placeholderCity": "اسم المدينة أو القرية...",
   "optionalAlias": "اسم مستعار إن رغبت"
+  ,
+  "home": "الرئيسية",
+  "browseViolations": "تصفح الانتهاكات",
+  "howItWorks": "كيف يعمل",
+  "about": "من نحن",
+  "faq": "الأسئلة الشائعة",
+  "contact": "تواصل معنا",
+  "institutionLogin": "تسجيل دخول المؤسسة",
+  "darkMode": "الوضع الداكن",
+  "lightMode": "الوضع العادي"
+,
+  "home": "الرئيسية",
+  "browseViolations": "تصفح الانتهاكات",
+  "howItWorks": "كيف يعمل",
+  "about": "من نحن",
+  "faq": "الأسئلة الشائعة",
+  "contact": "تواصل معنا",
+  "institutionLogin": "تسجيل دخول المؤسسة",
+
+  "dashboard": "لوحة التحكم",
+  "createCase": "إنشاء بلاغ",
+  "myCases": "بلاغاتي",
+  "reports": "التقارير",
+  "profile": "الملف الشخصي",
+  "settings": "الإعدادات",
+  "logout": "تسجيل الخروج",
+
+  "lightMode": "الوضع الفاتح",
+  "darkMode": "الوضع الليلي"
+,
+  "dashboard": "لوحة التحكم",
+  "manageInstitutions": "إدارة المؤسسات",
+  "viewReports": "عرض التقارير",
+  "settings": "الإعدادات",
+  "logout": "تسجيل الخروج"
+
+
+
+
+
 
 
 

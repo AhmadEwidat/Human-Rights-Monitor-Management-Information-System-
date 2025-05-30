@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import './LoginPage.css';
-import illustration from '../assets/loginLogo.jpg'; // عدّل حسب اسم الصورة
+import illustration from '../assets/loginLogo.jpg';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
 const LoginPage = () => {
   const { t } = useTranslation();
@@ -12,50 +13,56 @@ const LoginPage = () => {
   useEffect(() => {
     document.body.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
   }, [i18n.language]);
-const handleLogin = async (e) => {
-  e.preventDefault();
-  const username = e.target[0].value;
-  const password = e.target[1].value;
 
-  try {
-    const res = await fetch("http://localhost:8000/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, role: "" })
-    });
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    const username = e.target[0].value;
+    const password = e.target[1].value;
 
-    const data = await res.json();
+    try {
+      const res = await fetch("http://localhost:8000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
 
-    if (!res.ok) {
-      alert(data.detail || "Login failed");
-      return;
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.detail || "Login failed");
+        return;
+      }
+
+      localStorage.setItem("jwt_token", data.access_token);
+
+      const decoded = jwtDecode(data.access_token);
+      const userRole = decoded.role ? decoded.role.toLowerCase() : "";
+
+      localStorage.setItem("username", username);
+
+      if (userRole === "admin") {
+        navigate("/admin-welcome");
+      } else if (userRole === "institution") {
+        navigate("/institution-welcome");
+      } else {
+        navigate("/login");
+      }
+    } catch (err) {
+      alert("Error connecting to server");
+      console.error(err);
     }
-
-    localStorage.setItem("role", data.role);
-    localStorage.setItem("username", username);
-
-    // 🟢 التوجيه حسب الدور
-    if (data.role.toLowerCase() === "admin") {
-      navigate("/admin-welcome");
-    } else if (data.role.toLowerCase() === "investigator") {
-      navigate("/investigator-welcome");
-    } else {
-      navigate("/dashboard");
-    }
-  } catch (err) {
-    alert("Error connecting to server");
-    console.error(err);
-  }
-};
+  };
 
   return (
     <div className="login-wrapper">
-    
-
       <div className="login-box">
         <div className="login-left">
-          <h2 className="login-title">{t('loginTitle')}</h2>
-          <p className="login-subtitle">{t('loginSubtitle')}</p>
+          <h1 className="app-name" style={{ textAlign: 'center', color: '#5e9268', marginBottom: '10px' }}>
+            Monitor Palestine 360
+          </h1>
+          <h3 className="login-title" style={{ textAlign: 'center', color: '#888', marginBottom: '25px' }}>
+            {t('institutionLogin')}
+          </h3>
           <form className="login-form" onSubmit={handleLogin}>
             <input type="text" placeholder={t('username')} required />
             <input type="password" placeholder={t('password')} required />
@@ -63,10 +70,27 @@ const handleLogin = async (e) => {
               <label><input type="checkbox" /> {t('remember')}</label>
               <a href="#" className="forgot-password">{t('forgot')}</a>
             </div>
-            <button type="submit" className="submit-btn">{t('submit')}</button>
+<button
+  type="submit"
+  style={{
+    backgroundColor: '#5e9268',
+    color: 'white',
+    padding: '15px',
+    border: 'none',
+    borderRadius: '30px',
+    fontSize: '16px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    width: '100%',
+    transition: 'background-color 0.3s ease'
+  }}
+>
+  {t('submit')}
+</button>
+
+
           </form>
         </div>
-
         <div className="login-right">
           <img src={illustration} alt="Security Illustration" />
         </div>

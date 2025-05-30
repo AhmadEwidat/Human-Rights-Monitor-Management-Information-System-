@@ -1,9 +1,11 @@
-import React from "react";
+import React from 'react';
 
 const AdminWelcome = () => {
   return (
-    <div style={{padding: "3rem", textAlign: "center"}}>
-      <h1>هلو أدمن</h1>
+    <div>
+      <h1 style={{ textAlign: 'center', marginTop: '40px' }}>
+        مرحبًا بك في لوحة تحكم الأدمن
+      </h1>
     </div>
   );
 };

@@ -12,175 +12,121 @@ try:
 
     db = client["human_rights_mis"]
 
-    cases = db["cases"]
+    # حذف مجموعة institutions إذا موجودة (اختياري، للتجربة)
+    if "institutions" in db.list_collection_names():
+        db.drop_collection("institutions")
+        print("⚠️ Dropped existing 'institutions' collection")
 
-    cases.insert_many([  # ✅ استخدم insert_many في Python
+    institutions = db["institutions"]
+
+    institutions.insert_many([
         {
-            "case_id": "HRM-2025-0001",
-            "title": {"ar": "اعتقال تعسفي في مدينة نابلس", "en": "Arbitrary Arrest in Nablus"},
+            "name": {"ar": "اتحاد لجان المرأة الفلسطينية", "en": "Union of Palestinian Women's Committees"},
             "description": {
-                "ar": "تعرض شاب فلسطيني للاعتقال دون أمر قضائي أثناء عبوره أحد الحواجز.",
-                "en": "A Palestinian youth was arbitrarily arrested while crossing a checkpoint."
+                "ar": "منظمة تعمل على تعزيز حقوق المرأة في فلسطين.",
+                "en": "An organization working to promote women's rights in Palestine."
             },
-            "violation_types": [{"name_ar": "اعتقال تعسفي", "name_en": "Arbitrary Arrest"}],
-            "status": "new",
-            "priority": "high",
-            "location": {
-                "country": {"ar": "فلسطين", "en": "Palestine"},
-                "region": {"ar": "نابلس", "en": "Nablus"},
-                "coordinates": {"type": "Point", "coordinates": [35.2603, 32.2211]}
+            "contact_info": {
+                "email": "contact@upwc.ps",
+                "phone": "+970123456789"
             },
-            "date_occurred": datetime(2025, 5, 20),
-            "date_reported": datetime(2025, 5, 21)
+            "active": True,
+            "created_at": datetime.utcnow()
         },
         {
-            "case_id": "HRM-2025-0002",
-            "title": {"ar": "اعتقال أطفال في القدس", "en": "Child Arrest in Jerusalem"},
+            "name": {"ar": "الجمعية الفلسطينية لحماية حقوق الإنسان", "en": "Palestinian Society for Human Rights Protection"},
             "description": {
-                "ar": "تم اعتقال طفلين خلال مواجهات في البلدة القديمة.",
-                "en": "Two children were arrested during clashes in the Old City."
+                "ar": "جمعية تعنى بحماية حقوق الإنسان في فلسطين.",
+                "en": "Society dedicated to protecting human rights in Palestine."
             },
-            "violation_types": [{"name_ar": "اعتقال أطفال", "name_en": "Child Arrest"}],
-            "status": "new",
-            "priority": "medium",
-            "location": {
-                "country": {"ar": "فلسطين", "en": "Palestine"},
-                "region": {"ar": "القدس", "en": "Jerusalem"},
-                "coordinates": {"type": "Point", "coordinates": [35.2255, 31.7784]}
+            "contact_info": {
+                "email": "info@pshrp.ps",
+                "phone": "+970987654321"
             },
-            "date_occurred": datetime(2025, 5, 18),
-            "date_reported": datetime(2025, 5, 19)
+            "active": True,
+            "created_at": datetime.utcnow()
         },
         {
-            "case_id": "HRM-2025-0003",
-            "title": {"ar": "حاجز عسكري يمنع تنقل المواطنين", "en": "Military Checkpoint Blocking Movement"},
+            "name": {"ar": "القوس للتعددية الجنسية والجندرية", "en": "Al-Qaws for Sexual and Gender Diversity"},
             "description": {
-                "ar": "إغلاق حاجز مفاجئ أدى إلى احتجاز عشرات المركبات لعدة ساعات.",
-                "en": "A sudden checkpoint closure trapped dozens of vehicles for hours."
+                "ar": "منظمة تهتم بحقوق التعددية الجنسية والجندرية في فلسطين.",
+                "en": "Organization focused on sexual and gender diversity rights in Palestine."
             },
-            "violation_types": [{"name_ar": "حواجز عسكرية", "name_en": "Military Checkpoints"}],
-            "status": "new",
-            "priority": "low",
-            "location": {
-                "country": {"ar": "فلسطين", "en": "Palestine"},
-                "region": {"ar": "الخليل", "en": "Hebron"},
-                "coordinates": {"type": "Point", "coordinates": [35.0953, 31.5326]}
+            "contact_info": {
+                "email": "contact@alqaws.org",
+                "phone": "+970112233445"
             },
-            "date_occurred": datetime(2025, 5, 17),
-            "date_reported": datetime(2025, 5, 18)
+            "active": True,
+            "created_at": datetime.utcnow()
         },
         {
-            "case_id": "HRM-2025-0004",
-            "title": {"ar": "إطلاق نار على مدنيين", "en": "Shooting at Civilians"},
+            "name": {"ar": "المجموعة الفلسطينية لمراقبة حقوق الإنسان", "en": "Palestinian Group for Human Rights Monitoring"},
             "description": {
-                "ar": "إطلاق نار على مجموعة من الشباب بالقرب من الجدار الفاصل.",
-                "en": "Shooting at a group of youth near the separation wall."
+                "ar": "مجموعة تراقب وتنشر انتهاكات حقوق الإنسان في فلسطين.",
+                "en": "Group that monitors and reports human rights violations in Palestine."
             },
-            "violation_types": [{"name_ar": "إطلاق نار على مدنيين", "name_en": "Shooting at Civilians"}],
-            "status": "under_investigation",
-            "priority": "high",
-            "location": {
-                "country": {"ar": "فلسطين", "en": "Palestine"},
-                "region": {"ar": "قلقيلية", "en": "Qalqilya"},
-                "coordinates": {"type": "Point", "coordinates": [35.0104, 32.1902]}
+            "contact_info": {
+                "email": "info@pghrm.ps",
+                "phone": "+970556677889"
             },
-            "date_occurred": datetime(2025, 5, 15),
-            "date_reported": datetime(2025, 5, 16)
+            "active": True,
+            "created_at": datetime.utcnow()
         },
         {
-            "case_id": "HRM-2025-0005",
-            "title": {"ar": "هدم منازل في بيت لحم", "en": "Home Demolitions in Bethlehem"},
+            "name": {"ar": "المركز الفلسطيني لحقوق الإنسان", "en": "Palestinian Center for Human Rights"},
             "description": {
-                "ar": "قوات الاحتلال قامت بهدم منزلين بحجة البناء دون ترخيص.",
-                "en": "Israeli forces demolished two homes citing lack of permits."
+                "ar": "مركز رائد في مجال حقوق الإنسان في فلسطين.",
+                "en": "Leading center in human rights advocacy in Palestine."
             },
-            "violation_types": [{"name_ar": "هدم منازل", "name_en": "Home Demolition"}],
-            "status": "resolved",
-            "priority": "high",
-            "location": {
-                "country": {"ar": "فلسطين", "en": "Palestine"},
-                "region": {"ar": "بيت لحم", "en": "Bethlehem"},
-                "coordinates": {"type": "Point", "coordinates": [35.2024, 31.7054]}
+            "contact_info": {
+                "email": "contact@pchrgaza.org",
+                "phone": "+970998877665"
             },
-            "date_occurred": datetime(2025, 5, 10),
-            "date_reported": datetime(2025, 5, 11)
+            "active": True,
+            "created_at": datetime.utcnow()
         },
         {
-            "case_id": "HRM-2025-0006",
-            "title": {"ar": "تهجير قسري لعائلات في الأغوار", "en": "Forced Displacement in the Jordan Valley"},
+            "name": {"ar": "المركز الفلسطيني لمعلومات حقوق الإنسان", "en": "Palestinian Information Center for Human Rights"},
             "description": {
-                "ar": "تم تهجير عدة عائلات من مساكنهم بسبب التدريبات العسكرية.",
-                "en": "Several families were forcibly displaced due to military training."
+                "ar": "مركز معلومات متخصص في حقوق الإنسان.",
+                "en": "Information center specialized in human rights."
             },
-            "violation_types": [{"name_ar": "تهجير قسري", "name_en": "Forced Displacement"}],
-            "status": "under_investigation",
-            "priority": "high",
-            "location": {
-                "country": {"ar": "فلسطين", "en": "Palestine"},
-                "region": {"ar": "الأغوار", "en": "Jordan Valley"},
-                "coordinates": {"type": "Point", "coordinates": [35.536, 32.3125]}
+            "contact_info": {
+                "email": "info@pichr.ps",
+                "phone": "+970334455667"
             },
-            "date_occurred": datetime(2025, 5, 8),
-            "date_reported": datetime(2025, 5, 9)
+            "active": True,
+            "created_at": datetime.utcnow()
         },
         {
-            "case_id": "HRM-2025-0007",
-            "title": {"ar": "تفتيش منازل في رام الله", "en": "Home Raids in Ramallah"},
+            "name": {"ar": "الهيئة الفلسطينية للإعلام وتفعيل دور الشباب", "en": "Palestinian Media and Youth Empowerment Commission"},
             "description": {
-                "ar": "اقتحمت القوات عدة منازل في منتصف الليل وتم تفتيشها بعنف.",
-                "en": "Forces raided several homes at midnight and searched them violently."
+                "ar": "هيئة تعمل على تعزيز دور الإعلام والشباب في فلسطين.",
+                "en": "Commission that enhances media and youth roles in Palestine."
             },
-            "violation_types": [{"name_ar": "تفتيش منازل", "name_en": "Home Search"}],
-            "status": "new",
-            "priority": "medium",
-            "location": {
-                "country": {"ar": "فلسطين", "en": "Palestine"},
-                "region": {"ar": "رام الله", "en": "Ramallah"},
-                "coordinates": {"type": "Point", "coordinates": [35.2073, 31.9025]}
+            "contact_info": {
+                "email": "contact@pmyec.ps",
+                "phone": "+970776655443"
             },
-            "date_occurred": datetime(2025, 5, 6),
-            "date_reported": datetime(2025, 5, 7)
+            "active": True,
+            "created_at": datetime.utcnow()
         },
         {
-            "case_id": "HRM-2025-0008",
-            "title": {"ar": "اعتداء مستوطنين على مزارعين", "en": "Settler Attack on Farmers"},
+            "name": {"ar": "الهيئة المستقلة لحقوق الإنسان", "en": "Independent Commission for Human Rights"},
             "description": {
-                "ar": "قام مستوطنون بالاعتداء على مزارعين أثناء قطف الزيتون.",
-                "en": "Settlers attacked farmers during the olive harvest."
+                "ar": "هيئة مستقلة معنية بحقوق الإنسان في فلسطين.",
+                "en": "Independent commission concerned with human rights in Palestine."
             },
-            "violation_types": [{"name_ar": "اعتداء مستوطنين", "name_en": "Settler Violence"}],
-            "status": "new",
-            "priority": "medium",
-            "location": {
-                "country": {"ar": "فلسطين", "en": "Palestine"},
-                "region": {"ar": "سلفيت", "en": "Salfit"},
-                "coordinates": {"type": "Point", "coordinates": [35.1719, 32.0805]}
+            "contact_info": {
+                "email": "info@ichr.ps",
+                "phone": "+970221144335"
             },
-            "date_occurred": datetime(2025, 5, 3),
-            "date_reported": datetime(2025, 5, 4)
-        },
-        {
-            "case_id": "HRM-2025-0009",
-            "title": {"ar": "منع الوصول للخدمات الطبية", "en": "Denial of Access to Medical Services"},
-            "description": {
-                "ar": "تم منع سيارة إسعاف من الوصول إلى الجرحى بسبب الحواجز.",
-                "en": "An ambulance was blocked from reaching the wounded due to checkpoints."
-            },
-            "violation_types": [{"name_ar": "منع الوصول للخدمات", "name_en": "Denial of Services"}],
-            "status": "new",
-            "priority": "high",
-            "location": {
-                "country": {"ar": "فلسطين", "en": "Palestine"},
-                "region": {"ar": "جنين", "en": "Jenin"},
-                "coordinates": {"type": "Point", "coordinates": [35.2978, 32.4658]}
-            },
-            "date_occurred": datetime(2025, 5, 1),
-            "date_reported": datetime(2025, 5, 2)
+            "active": True,
+            "created_at": datetime.utcnow()
         }
-        
     ])
 
-    print("✅ All cases inserted successfully!")
+    print("✅ All institutions inserted successfully!")
 
 except Exception as e:
     print("❌ Error:", e)

@@ -38,7 +38,7 @@ body {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  background-color: #761616 !important;
+  background-color: #5e9268 !important;
   padding: 0px 0px !important;
   color: white !important;
   flex-wrap: wrap !important;
@@ -54,13 +54,14 @@ body {
   width: auto !important;
   object-fit: contain !important;
 }
-
 .navbar-title {
   font-size: 32px !important;
   font-weight: bold !important;
   color: white !important;
   white-space: nowrap !important;
+  margin-left: 30px !important;  /* ✅ هذا يضيف الفراغ */
 }
+
 
 .navbar-links {
   list-style: none !important;

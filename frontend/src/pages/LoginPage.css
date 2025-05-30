@@ -1,6 +1,6 @@
 .login-wrapper {
   height: 100vh;
-  background: linear-gradient(to right, #f5e2e2,  #a45858);
+  background: linear-gradient(to right, #d6f0e4, #5e9268);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -26,9 +26,16 @@
 
 .login-title {
   font-size: 24px;
-  color: #a45858;
+  color: #5e9268;
   margin-bottom: 30px;
   text-align: center;
+}
+
+.login-subtitle {
+  font-size: 14px !important;
+  color: #5e9268 !important;
+  text-align: center !important;
+  margin-bottom: 25px !important;
 }
 
 .login-form input {
@@ -49,30 +56,25 @@
 }
 
 .forgot-password {
-  color: #a45858;
+  color: #5e9268;
   text-decoration: none;
 }
 
-.submit-btn {
+form button {
   width: 100%;
   padding: 15px;
-  border: none;
-  border-radius: 30px;
-  background-color: #a45858;
+  background: linear-gradient(135deg, #4e7a57, #5e9268) !important;
   color: white;
-  font-size: 14px;
+  border: none;
+  border-radius: 12px;
   font-weight: bold;
+  font-size: 18px;
   cursor: pointer;
-  transition: 0.3s;
-}
-
-.submit-btn:hover {
-  background-color:#a45858;
 }
 
 .login-right {
   flex: 1;
-  background: #a45858;
+  background: #5e9268;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,10 +83,4 @@
 .login-right img {
   width: 90%;
   max-width: 350px;
-}
-.login-subtitle {
-  font-size: 14px !important;
-  color: #a45858 !important;
-  text-align: center !important;
-  margin-bottom: 25px !important;
 }

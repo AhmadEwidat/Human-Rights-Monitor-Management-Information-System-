@@ -19,16 +19,10 @@ const Home = () => {
         </button>
       </div>
 
-      <h1 className="home-title">Palestine Monitor 360</h1>
 
-      <p className="home-description">
-        A secure platform for documenting and analyzing human rights violations in Palestine.
-        Submit reports, explore visual insights, and take part in defending justice.
-      </p>
+      
 
-      <Link to="/submit-report" className="home-button">
-        Submit a Report
-      </Link>
+     
     </div>
   );
 };
