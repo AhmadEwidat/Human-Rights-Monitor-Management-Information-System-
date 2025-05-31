@@ -106,10 +106,25 @@
   "noReports": "No reports found",
   "fetchError": "Error fetching reports",
 
+  "availableCases": "Available Cases",
+  "caseId": "Case ID",
+  "description": "Description",
+  "addReport": "Add Report",
+  "noCases": "No cases found",
+  "createNewCase": "Create New Case",
 
+  "pendingCases": "Pending Cases",
+  "selectStatus": "Select Status",
+  "statusUpdated": "Status updated successfully",
+  "noPendingCases": "No pending cases",
 
-"reports": "Reports"
-
-
+"reports": "Reports",
+  "submitting": "Submitting...",
+  "statistics": "Statistics",
+  "loading": "Loading...",
+  "loginFailed": "Login failed",
+  "serverError": "Error connecting to server",
+  "tokenExpired": "Token has expired",
+  "logout": "Logout"
 
 }

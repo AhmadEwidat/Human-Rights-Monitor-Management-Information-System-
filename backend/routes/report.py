@@ -1,29 +1,62 @@
-from fastapi import APIRouter, Form, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Form, File, UploadFile
 from fastapi.responses import JSONResponse
-from typing import List, Optional, Union
+from fastapi.security import OAuth2PasswordBearer
+import jwt
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-from datetime import datetime
+from bson import ObjectId
+from typing import List, Optional, Union
+import json
 import os
 import shutil
 import uuid
-import json
-from bson import ObjectId
+from datetime import datetime
 from geopy.geocoders import Nominatim
 
+# إعداد الراوتر
 router = APIRouter()
 
-# الاتصال بقاعدة البيانات
+# إعدادات الاتصال بقاعدة البيانات
 uri = "mongodb+srv://asma:asmaasma@cluster0.kbgepxe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 client = MongoClient(uri, server_api=ServerApi('1'))
 db = client["human_rights_mis"]
 reports_collection = db["incident_reports"]
 evidence_collection = db["report_evidence"]
 
+# إعداد مجلد الرفع
 UPLOAD_DIR = "uploaded_evidence"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+# إعداد الموقع الجغرافي
 geolocator = Nominatim(user_agent="human_rights_mis")
+
+# إعدادات JWT
+SECRET_KEY = "secret123"  # استبدل هذا بمفتاح سري قوي وآمن
+ALGORITHM = "HS256"
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
+# دالة للتحقق من التوكن
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("username")
+        role = payload.get("role")
+        if username is None or role is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return {"username": username, "role": role}
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+# دالة للتحقق من توكن الإداري
+async def get_admin_token(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        role = payload.get("role")
+        if role != "admin":
+            raise HTTPException(status_code=403, detail="Admin access required")
+        return token
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
 # دالة مساعدة لتحويل ObjectId إلى نصوص
 def convert_objectid_to_str(data):
@@ -35,12 +68,14 @@ def convert_objectid_to_str(data):
         return str(data)
     return data
 
+# نقطة نهاية لجلب التقارير
 @router.get("/")
 async def get_reports(
     status: str = None,
     start_date: str = None,
     end_date: str = None,
-    location: str = None
+    location: str = None,
+    user_role: str = "user"  # افتراضيًا، المستخدم عادي
 ):
     try:
         query = {}
@@ -55,11 +90,15 @@ async def get_reports(
             try:
                 if "created_at" not in query:
                     query["created_at"] = {}
-                query["created_at"]["$lte"] = datetime.fromisoformat(end_date)  # إزالة القوس الزائد
+                query["created_at"]["$lte"] = datetime.fromisoformat(end_date)
             except ValueError:
                 raise HTTPException(status_code=400, detail="Invalid end_date format. Use ISO format (e.g., 2025-05-01T00:00:00)")
         if location:
             query["incident_details.location.country"] = location
+
+        # إخفاء القضايا في حالة pending عن المستخدم العادي
+        if user_role == "user":
+            query["pending_approval"] = {"$ne": True}
 
         reports = list(reports_collection.find(query, {"_id": 0, "evidence_ids": 0}))
         reports = convert_objectid_to_str(reports)
@@ -67,6 +106,7 @@ async def get_reports(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching reports: {str(e)}")
 
+# نقطة نهاية لإرسال تقرير
 @router.post("/")
 async def submit_report(
     anonymous: bool = Form(...),
@@ -102,6 +142,9 @@ async def submit_report(
             date_obj = None
         incident["date"] = date_obj
 
+        # إذا كان المُبلغ مؤسسة، اجعل القضية في حالة pending
+        pending_approval = (reporter_type == "institution")
+
         doc = {
             "reporter_type": reporter_type,
             "anonymous": anonymous,
@@ -110,6 +153,7 @@ async def submit_report(
             "incident_details": incident,
             "created_by": created_by,
             "status": "new",
+            "pending_approval": pending_approval,
             "created_at": datetime.utcnow()
         }
 
@@ -156,3 +200,130 @@ async def submit_report(
     except Exception as e:
         print("صار خطأ أثناء الإرسال:", str(e))
         return JSONResponse(status_code=500, content={"message": "خطأ أثناء إرسال التقرير: " + str(e)})
+@router.get("/case-types")
+async def get_case_types():
+    # بيانات ثابتة، يمكن استبدالها ببيانات من قاعدة بيانات
+    case_types = [
+        {"name_en": "Torture", "name_ar": "التعذيب"},
+        {"name_en": "Arrest", "name_ar": "الاعتقال"},
+        {"name_en": "Discrimination", "name_ar": "التمييز"},
+    ]
+    return case_types
+# نقطة نهاية لإنشاء قضية جديدة مع تقرير
+@router.post("/cases/new-with-report/")
+async def create_new_case_with_report(
+    anonymous: bool = Form(...),
+    reporter_type: str = Form(...),
+    incident_details: str = Form(...),
+    created_by: str = Form(...),
+    contact_info: Optional[str] = Form(None),
+    pseudonym: Optional[str] = Form(None),
+    evidence: Union[UploadFile, List[UploadFile], None] = File(None),
+    location_str: str = Form(...)
+):
+    try:
+        incident = json.loads(incident_details)
+        contact = json.loads(contact_info) if contact_info else None
+
+        try:
+            location = geolocator.geocode(location_str)
+            if location:
+                incident["location"] = {
+                    "country": location.address.split(",")[-1].strip(),
+                    "coordinates": {"type": "Point", "coordinates": [location.longitude, location.latitude]}
+                }
+            else:
+                incident["location"] = {"country": location_str, "coordinates": None}
+        except Exception as e:
+            incident["location"] = {"country": location_str, "coordinates": None}
+            print(f"Geolocation error: {str(e)}")
+
+        date_str = incident.get("date")
+        try:
+            date_obj = datetime.strptime(date_str, "%Y-%m-%d") if date_str else None
+        except Exception:
+            date_obj = None
+        incident["date"] = date_obj
+
+        doc = {
+            "reporter_type": reporter_type,
+            "anonymous": anonymous,
+            "pseudonym": pseudonym if anonymous else None,
+            "contact_info": contact if not anonymous else None,
+            "incident_details": incident,
+            "created_by": created_by,
+            "status": "pending",
+            "pending_approval": True,
+            "created_at": datetime.utcnow()
+        }
+
+        inserted = reports_collection.insert_one(doc)
+        case_id = inserted.inserted_id
+
+        evidence_ids = []
+        if evidence:
+            if not isinstance(evidence, list):
+                evidence = [evidence]
+            if len(evidence) < 1 or len(evidence) > 5:
+                raise HTTPException(status_code=400, detail="يجب رفع ملف واحد على الأقل، وبحد أقصى 5 ملفات")
+
+            for file in evidence:
+                try:
+                    ext = file.filename.split(".")[-1]
+                    file_id = f"{uuid.uuid4()}.{ext}"
+                    file_path = os.path.join(UPLOAD_DIR, file_id)
+                    with open(file_path, "wb") as buffer:
+                        shutil.copyfileobj(file.file, buffer)
+
+                    evidence_doc = {
+                        "report_id": case_id,
+                        "filename": file.filename,
+                        "stored_as": file_id,
+                        "content_type": file.content_type,
+                        "path": file_path,
+                        "uploaded_at": datetime.utcnow()
+                    }
+
+                    result = evidence_collection.insert_one(evidence_doc)
+                    evidence_ids.append(result.inserted_id)
+                except Exception as e:
+                    print(f"Error uploading file {file.filename}: {str(e)}")
+                    continue
+
+        reports_collection.update_one(
+            {"_id": case_id},
+            {"$set": {"evidence_ids": evidence_ids}}
+        )
+
+        return {"message": "تم تقديم القضية الجديدة بنجاح، بانتظار الموافقة", "case_id": str(case_id)}
+
+    except Exception as e:
+        print("صار خطأ أثناء الإرسال:", str(e))
+        return JSONResponse(status_code=500, content={"message": "خطأ أثناء إرسال القضية: " + str(e)})
+
+# نقطة نهاية لتحديث حالة القضية
+@router.put("/cases/{case_id}/status")
+async def update_case_status(case_id: str, status: str, admin_token: str = Depends(get_admin_token)):
+    if not admin_token:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    result = reports_collection.update_one(
+        {"_id": ObjectId(case_id), "pending_approval": True},
+        {"$set": {"status": status, "pending_approval": False}}
+    )
+    if result.modified_count > 0:
+        return {"message": f"تم تحديث حالة القضية إلى {status}"}
+    raise HTTPException(status_code=404, detail="Case not found or already approved")
+    
+@router.get("/cases")
+async def get_cases(current_user: dict = Depends(get_current_user)):
+    try:
+        if current_user["role"] != "institution":
+            raise HTTPException(status_code=403, detail="Not authorized")
+        cases = list(reports_collection.find({}, {"_id": 0}))
+        for case in cases:
+            case["id"] = str(case.get("_id", case.get("id")))
+        # تحويل جميع ObjectId إلى نصوص
+        cases = convert_objectid_to_str(cases)
+        return {"cases": cases}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")

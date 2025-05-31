@@ -57,7 +57,7 @@ function InstitutionNavbar() {
 
         <ul className="inst-nav__links">
           <li><NavLink to="/institution-dashboard">{t('dashboard')}</NavLink></li>
-          <li><NavLink to="/institution-create-case">{t('createCase')}</NavLink></li>
+          <li><NavLink to="institution-create-new-case">{t('createCase')}</NavLink></li>
           <li><NavLink to="/institution-my-cases">{t('myCases')}</NavLink></li>
           <li><NavLink to="/institution-reports">{t('reports')}</NavLink></li>
           <li><NavLink to="/institution-profile">{t('profile')}</NavLink></li>
