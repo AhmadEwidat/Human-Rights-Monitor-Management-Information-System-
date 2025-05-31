@@ -54,6 +54,7 @@ function Navbar() {
           <li><Link to="/about">{t('about')}</Link></li>
           <li><Link to="/faq">{t('faq')}</Link></li>
           <li><Link to="/contact">{t('contact')}</Link></li>
+          <li><Link to="/statistics">{t('statistics')}</Link></li>
         </ul>
 
         <Link to="/login" className="login-btn">

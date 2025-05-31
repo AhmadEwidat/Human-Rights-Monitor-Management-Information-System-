@@ -1,20 +1,21 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from pymongo import MongoClient
 import bcrypt
 from fastapi.middleware.cors import CORSMiddleware
 import jwt
 from datetime import datetime, timedelta
-from routes.report import router as report_router  # إذا عندك راوتر للتقارير
+from routes.report import router as report_router
 
 # إعداد FastAPI
 app = FastAPI()
-app.include_router(report_router, prefix="/reports")  # تفعيل راوتر التقارير إذا موجود
+app.include_router(report_router, prefix="/reports")
 
 # إعداد CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],           # يمكن تضييقها لاحقًا إلى ["http://localhost:3000"]
+    allow_origins=["http://localhost:3000"],  # تقييد المصادر لتحسين الأمان
+    
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,7 +31,7 @@ users = db["users"]
 case_types = db["case_types"]
 
 # إعدادات JWT
-SECRET_KEY = "secret123"         # استبدلها بمفتاح سري قوي في الإنتاج
+SECRET_KEY = "secret123"  # استبدلها بمفتاح سري قوي في الإنتاج
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
@@ -40,7 +41,7 @@ class LoginRequest(BaseModel):
     password: str
 
 @app.post("/login")
-def login_user(user: LoginRequest):
+async def login_user(user: LoginRequest):
     found_user = users.find_one({"username": user.username})
     if not found_user:
         raise HTTPException(status_code=401, detail="Username not found")
@@ -54,17 +55,17 @@ def login_user(user: LoginRequest):
     # توليد توكن JWT مع صلاحية محدودة
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     payload = {
-        "sub": user.username,
+        "sub": str(found_user["_id"]),  # استخدام _id كـ sub
+        "username": found_user["username"],  # إضافة username صراحةً
         "role": found_user["role"],
         "exp": expire
     }
     access_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
-    return {"access_token": access_token}
-
+    return {"access_token": access_token, "token_type": "bearer"}
 
 @app.get("/users")
-def get_users():
+async def get_users():
     data = []
     for user in users.find():
         user["_id"] = str(user["_id"])
@@ -72,12 +73,10 @@ def get_users():
         data.append(user)
     return {"users": data}
 
-
 @app.get("/case-types")
-def get_case_types():
+async def get_case_types():
     types = list(case_types.find({}, {"_id": 0}))
     return types
-
 
 @app.get("/ping")
 async def ping():

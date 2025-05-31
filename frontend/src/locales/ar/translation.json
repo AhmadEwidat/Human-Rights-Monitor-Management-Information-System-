@@ -104,5 +104,25 @@
   "loading": "جارٍ التحميل...",
   "noReports": "لا توجد تقارير",
   "fetchError": "خطأ أثناء جلب التقارير",
-  "reports": "التقارير"
+  "reports": "التقارير",
+  "availableCases": "القضايا المتاحة",
+  "caseId": "معرف القضية",
+  "description": "الوصف",
+  "addReport": "إضافة تقرير",
+  "noCases": "لا توجد قضايا",
+  "createNewCase": "إنشاء قضية جديدة",
+  "cases": "القضايا",
+  "pendingCases": "القضايا المعلقة",
+  "selectStatus": "اختر الحالة",
+  "statusUpdated": "تم تحديث الحالة بنجاح",
+  "noPendingCases": "لا توجد قضايا معلقة",
+  
+  "submitting": "جارٍ الإرسال...",
+  "statistics": "إحصائيات",
+  "loading": "جارٍ التحميل...",
+  "loginFailed": "فشل تسجيل الدخول",
+  "serverError": "خطأ في الاتصال بالخادم",
+  "tokenExpired": "انتهت صلاحية التوكن",
+  "logout": "تسجيل الخروج"
+
 }
