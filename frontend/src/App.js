@@ -1,19 +1,32 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation
+} from 'react-router-dom';
+
 import Navbar from './components/Navbar';
 import InstitutionNavbar from './components/InstitutionNavbar';
 import AdminNavbar from './components/AdminNavbar';
-import ReportsPage from './pages/ReportsPage';
+
 import Home from './pages/Home';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import AdminWelcome from './pages/AdminWelcome';
 import InstitutionWelcome from './pages/InstitutionWelcome';
+import CaseDetails from './pages/CaseDetails';
 import SubmitReportForm from './pages/SubmitReportForm';
 import CasesList from './pages/CasesList';
 import AdminReports from './pages/AdminReports';
 import Statistics from './pages/Statistics';
+import ReportsPage from './pages/ReportsPage';
+import ManageCases from './pages/ManageCases';
+import CreateCasePage from './pages/CreateNewCase';
+import UpdateCase from './pages/UpdateCase';
+
 import './index.css';
+
 function AppLayout() {
   const location = useLocation();
   const { pathname } = location;
@@ -46,11 +59,14 @@ function AppLayout() {
         <Route path="/institution-my-cases" element={<CasesList />} />
         <Route path="/institution-create-new-case" element={<SubmitReportForm />} />
         <Route path="/institution-create-report/:caseId" element={<SubmitReportForm />} />
-        <Route path="/institution-reports" element={<ReportsPage />} /> 
         <Route path="/reports" element={<ReportsPage />} />
-   
         <Route path="/admin-reports" element={<AdminReports />} />
         <Route path="/statistics" element={<Statistics />} />
+        <Route path="/admin/cases" element={<ManageCases />} />
+        <Route path="/admin/cases/create" element={<CreateCasePage />} />
+        <Route path="/cases/:caseId" element={<CaseDetails />} />
+        <Route path="/cases/:caseId/update" element={<UpdateCase />} />
+        <Route path="/institution-create-case" element={<SubmitReportForm />} />
       </Routes>
     </>
   );

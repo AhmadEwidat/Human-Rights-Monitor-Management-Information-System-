@@ -5,13 +5,27 @@ import bcrypt
 from fastapi.middleware.cors import CORSMiddleware
 import jwt
 from datetime import datetime, timedelta
+<<<<<<< HEAD
 from routes.report import router as report_router
+=======
+>>>>>>> branch3
 
-# إعداد FastAPI
+from routes.report import router as report_router
+from routes.cases import router as cases_router
+from fastapi.staticfiles import StaticFiles
+
+    
 app = FastAPI()
+<<<<<<< HEAD
 app.include_router(report_router, prefix="/reports")
+=======
+>>>>>>> branch3
 
-# إعداد CORS
+app.include_router(report_router, prefix="/reports")
+app.include_router(cases_router)  
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],  # تقييد المصادر لتحسين الأمان
