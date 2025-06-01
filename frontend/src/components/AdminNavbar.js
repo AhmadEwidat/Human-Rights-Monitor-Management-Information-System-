@@ -27,8 +27,10 @@ const AdminNavbar = () => {
         <li><Link to="/admin-institutions">{t('manageInstitutions')}</Link></li>
         <li><Link to="/admin-reports">{t('reviewReports')}</Link></li>
         <li><Link to="/admin-users">{t('manageUsers')}</Link></li>
+        <li><Link to="/admin/cases">{t('manageCases')}</Link></li>
         <li><Link to="/admin-settings">{t('settings')}</Link></li>
-      </ul>
+</ul>
+
 
       <button onClick={handleLogout} className="admin-logout-btn">
         {t('logout')}
