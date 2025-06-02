@@ -4,13 +4,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import "./SubmitReportForm.css";
 
 function SubmitReportForm() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { caseId } = useParams();
   const navigate = useNavigate();
   const [isNewCase, setIsNewCase] = useState(!caseId);
   const [violationOptions, setViolationOptions] = useState([]);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
   const role = localStorage.getItem("role");
 
   const [reportData, setReportData] = useState({
@@ -37,6 +38,27 @@ function SubmitReportForm() {
       .catch(() => setViolationOptions([]));
   }, [role, navigate]);
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!reportData.incident_details.description) {
+      newErrors.description = t("descriptionRequired");
+    }
+    if (!reportData.incident_details.location_str) {
+      newErrors.location = t("locationRequired");
+    }
+    if (!reportData.incident_details.date) {
+      newErrors.date = t("dateRequired");
+    }
+    if (!isAnonymous && !reportData.contact_info.email) {
+      newErrors.email = t("emailRequired");
+    }
+    if (reportData.incident_details.violation_types.length === 0) {
+      newErrors.violation_types = t("violationTypesRequired");
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name.startsWith("contact_info.")) {
@@ -56,12 +78,33 @@ function SubmitReportForm() {
     }
   };
 
+  const handleViolationTypesChange = (e) => {
+    const selectedOptions = Array.from(
+      e.target.selectedOptions,
+      (opt) => opt.value
+    );
+    setReportData((prev) => ({
+      ...prev,
+      incident_details: {
+        ...prev.incident_details,
+        violation_types: selectedOptions,
+      },
+    }));
+  };
+
   const handleFileChange = (e) => {
-    setReportData((prev) => ({ ...prev, evidence: e.target.files }));
+    const files = e.target.files;
+    if (files.length > 5) {
+      alert(t("maxFiles"));
+      return;
+    }
+    setReportData((prev) => ({ ...prev, evidence: files }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     setIsSubmitting(true);
     const userId = localStorage.getItem("user_id");
     const formData = new FormData();
@@ -89,24 +132,26 @@ function SubmitReportForm() {
     }
 
     if (reportData.evidence && reportData.evidence.length > 0) {
-      Array.from(reportData.evidence).forEach((file) => formData.append("evidence", file));
+      Array.from(reportData.evidence).forEach((file) =>
+        formData.append("evidence", file)
+      );
     }
 
     try {
       const url = isNewCase
         ? "http://localhost:8000/cases/new-with-report/"
-        : `http://localhost:8000/reports/?case_id=${caseId}`
+        : `http://localhost:8000/reports/?case_id=${caseId}`;
       const response = await fetch(url, {
         method: "POST",
         body: formData,
         headers: { Authorization: `Bearer ${localStorage.getItem("jwt_token")}` },
       });
       if (response.ok) {
-        alert(t("reportSuccess") || "تم إرسال التقرير بنجاح ✅");
-        navigate("/institution-cases");
+        alert(t("reportSuccess"));
+        navigate("/institution-my-cases");
       } else {
-        const res = await response.json();
-        alert(t("reportFailed") + ": " + (res.message || response.statusText));
+        const errorData = await response.json();
+        alert(t("reportFailed") + ": " + (errorData.message || response.statusText));
       }
     } catch (err) {
       alert(t("reportError") + ": " + err.message);
@@ -116,142 +161,155 @@ function SubmitReportForm() {
   };
 
   return (
-    <div className="report-form-container">
-      <h2>{t("submitTitle")}</h2>
-      {isNewCase && <h3>{t("newCaseTitle") || "إنشاء قضية جديدة"}</h3>}
+    <div
+      className="report-form-container"
+      style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem" }}
+    >
+      <h2>{isNewCase ? t("createNewCase") : t("submitReport")}</h2>
       <form onSubmit={handleSubmit} encType="multipart/form-data">
-        <label>
-          {t("reporterType")}:
+        <div style={{ marginBottom: "1rem" }}>
+          <label>{t("reporterType")}:</label>
           <select
             name="reporter_type"
             onChange={handleChange}
             value={reportData.reporter_type}
             disabled={isSubmitting}
+            style={{ width: "100%", padding: "0.5rem" }}
           >
             <option value="victim">{t("victim")}</option>
             <option value="witness">{t("witness")}</option>
           </select>
-        </label>
+        </div>
 
-        <label>
-          {t("anonymousQuestion")}
-          <input
-            type="checkbox"
-            checked={isAnonymous}
-            onChange={() => setIsAnonymous(!isAnonymous)}
-            disabled={isSubmitting}
-          />
-        </label>
+        <div style={{ marginBottom: "1rem" }}>
+          <label>
+            <input
+              type="checkbox"
+              checked={isAnonymous}
+              onChange={() => setIsAnonymous(!isAnonymous)}
+              disabled={isSubmitting}
+            />
+            {t("anonymousQuestion")}
+          </label>
+        </div>
 
         {isAnonymous && (
-          <label>
-            {t("pseudonym")}:
+          <div style={{ marginBottom: "1rem" }}>
+            <label>{t("pseudonym")}:</label>
             <input
               type="text"
               name="pseudonym"
               onChange={handleChange}
               placeholder={t("optionalAlias")}
               disabled={isSubmitting}
+              style={{ width: "100%", padding: "0.5rem" }}
             />
-          </label>
+          </div>
         )}
 
         {!isAnonymous && (
           <>
-            <label>
-              {t("email")}:
+            <div style={{ marginBottom: "1rem" }}>
+              <label>{t("email")}:</label>
               <input
                 type="email"
                 name="contact_info.email"
                 onChange={handleChange}
                 placeholder={t("placeholderEmail")}
                 disabled={isSubmitting}
+                style={{ width: "100%", padding: "0.5rem" }}
               />
-            </label>
-            <label>
-              {t("phone")}:
+              {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
+            </div>
+            <div style={{ marginBottom: "1rem" }}>
+              <label>{t("phone")}:</label>
               <input
                 type="text"
                 name="contact_info.phone"
                 onChange={handleChange}
                 placeholder={t("placeholderPhone")}
                 disabled={isSubmitting}
+                style={{ width: "100%", padding: "0.5rem" }}
               />
-            </label>
-            <label>
-              {t("preferredContact")}:
+            </div>
+            <div style={{ marginBottom: "1rem" }}>
+              <label>{t("preferredContact")}:</label>
               <select
                 name="contact_info.preferred_contact"
                 onChange={handleChange}
                 value={reportData.contact_info.preferred_contact}
                 disabled={isSubmitting}
+                style={{ width: "100%", padding: "0.5rem" }}
               >
                 <option value="email">{t("email")}</option>
                 <option value="phone">{t("phone")}</option>
                 <option value="whatsapp">WhatsApp</option>
               </select>
-            </label>
+            </div>
           </>
         )}
 
-        <label>
-          {t("violationDescription")}:
+        <div style={{ marginBottom: "1rem" }}>
+          <label>{t("violationDescription")}:</label>
           <textarea
             name="incident_details.description"
             onChange={handleChange}
             placeholder={t("placeholderDescription")}
             disabled={isSubmitting}
+            style={{ width: "100%", padding: "0.5rem", minHeight: "100px" }}
           />
-        </label>
+          {errors.description && (
+            <p style={{ color: "red" }}>{errors.description}</p>
+          )}
+        </div>
 
-        <label>
-          {t("violationTypes")}:
+        <div style={{ marginBottom: "1rem" }}>
+          <label>{t("violationTypes")}:</label>
           <select
             multiple
             name="incident_details.violation_types"
-            onChange={(e) =>
-              setReportData((prev) => ({
-                ...prev,
-                incident_details: {
-                  ...prev.incident_details,
-                  violation_types: Array.from(e.target.selectedOptions, (opt) => opt.value),
-                },
-              }))
-            }
+            onChange={handleViolationTypesChange}
             disabled={isSubmitting}
+            style={{ width: "100%", padding: "0.5rem", minHeight: "100px" }}
           >
-            {Array.isArray(violationOptions) &&
-              violationOptions.map((type, index) => (
-                <option key={index} value={type.name_en}>
-                  {type[`name_${i18n.language}`]}
-                </option>
-              ))}
+            {violationOptions.map((type, index) => (
+              <option key={index} value={type.name_en}>
+                {type.name_en} {/* Changed: Use type.name_en directly or translate if needed */}
+              </option>
+            ))}
           </select>
-        </label>
+          {errors.violation_types && (
+            <p style={{ color: "red" }}>{errors.violation_types}</p>
+          )}
+        </div>
 
-        <label>
-          {t("location")}:
+        <div style={{ marginBottom: "1rem" }}>
+          <label>{t("location")}:</label>
           <input
             type="text"
             name="incident_details.location_str"
             onChange={handleChange}
             placeholder={t("placeholderLocation")}
             disabled={isSubmitting}
+            style={{ width: "100%", padding: "0.5rem" }}
           />
-        </label>
+          {errors.location && <p style={{ color: "red" }}>{errors.location}</p>}
+        </div>
 
-        <label>
-          {t("date")}:
+        <div style={{ marginBottom: "1rem" }}>
+          <label>{t("date")}:</label>
           <input
             type="date"
             name="incident_details.date"
             onChange={handleChange}
             disabled={isSubmitting}
+            style={{ width: "100%", padding: "0.5rem" }}
           />
-        </label>
+          {errors.date && <p style={{ color: "red" }}>{errors.date}</p>}
+        </div>
 
-        <label>
-          {t("uploadEvidence")}:
+        <div style={{ marginBottom: "1rem" }}>
+          <label>{t("uploadEvidence")} (Max 5 files):</label>
           <input
             type="file"
             name="evidence"
@@ -259,11 +317,23 @@ function SubmitReportForm() {
             accept="image/*,video/*,application/pdf"
             onChange={handleFileChange}
             disabled={isSubmitting}
+            style={{ width: "100%", padding: "0.5rem" }}
           />
-        </label>
+        </div>
 
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? t("submitting") || "جارٍ الإرسال..." : t("submitButton")}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          style={{
+            background: "#2e7d32",
+            color: "white",
+            padding: "0.5rem 1rem",
+            border: "none",
+            borderRadius: "4px",
+            cursor: isSubmitting ? "not-allowed" : "pointer",
+          }}
+        >
+          {isSubmitting ? t("submitting") : t("submitButton")}
         </button>
       </form>
     </div>

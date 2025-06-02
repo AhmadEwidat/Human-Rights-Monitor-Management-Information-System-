@@ -20,11 +20,13 @@ import SubmitReportForm from './pages/SubmitReportForm';
 import CasesList from './pages/CasesList';
 import AdminReports from './pages/AdminReports';
 import Statistics from './pages/Statistics';
+
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import ReportsPage from './pages/ReportsPage';
 import ManageCases from './pages/ManageCases';
 import CreateCasePage from './pages/CreateNewCase';
 import UpdateCase from './pages/UpdateCase';
-
 import './index.css';
 
 function AppLayout() {

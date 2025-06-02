@@ -12,10 +12,13 @@ import shutil
 import uuid
 from datetime import datetime
 from geopy.geocoders import Nominatim
+from pydantic import BaseModel
 
 # إعداد الراوتر
 router = APIRouter()
-
+class StatusUpdate(BaseModel):
+    status: str  # حقل إلزامي
+    comment: str | None = None
 # إعدادات الاتصال بقاعدة البيانات
 uri = "mongodb+srv://asma:asmaasma@cluster0.kbgepxe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 client = MongoClient(uri, server_api=ServerApi('1'))
@@ -75,7 +78,8 @@ async def get_reports(
     start_date: str = None,
     end_date: str = None,
     location: str = None,
-    user_role: str = "user"  # افتراضيًا، المستخدم عادي
+    pending_only: bool = False,  # New parameter to fetch pending reports
+    current_user: dict = Depends(get_current_user)
 ):
     try:
         query = {}
@@ -96,17 +100,28 @@ async def get_reports(
         if location:
             query["incident_details.location.country"] = location
 
-        # إخفاء القضايا في حالة pending عن المستخدم العادي
-        if user_role == "user":
-            query["pending_approval"] = {"$ne": True}
+        # If pending_only is True, only fetch pending reports (admin only)
+        if pending_only:
+            if current_user["role"] != "admin":
+                raise HTTPException(status_code=403, detail="Admin access required for pending reports")
+            query["pending_approval"] = True
+        else:
+            # For non-admins or regular queries, only show approved reports
+            if current_user["role"] != "admin":
+                query["pending_approval"] = {"$ne": True}
 
-        reports = list(reports_collection.find(query, {"_id": 0, "evidence_ids": 0}))
-        reports = convert_objectid_to_str(reports)
+        reports = list(reports_collection.find(query))
+        # Convert ObjectIds to strings and handle nested ObjectIds
+        for report in reports:
+            report["id"] = str(report["_id"])
+            del report["_id"]
+            if "evidence_ids" in report:
+                report["evidence_ids"] = [str(eid) for eid in report["evidence_ids"]]
+            if "case_id" in report:
+                report["case_id"] = str(report["case_id"])
         return {"reports": reports}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching reports: {str(e)}")
-
-# نقطة نهاية لإرسال تقرير
 @router.post("/")
 async def submit_report(
     anonymous: bool = Form(...),
@@ -116,12 +131,14 @@ async def submit_report(
     contact_info: Optional[str] = Form(None),
     pseudonym: Optional[str] = Form(None),
     evidence: Union[UploadFile, List[UploadFile], None] = File(None),
-    location_str: str = Form(...)
+    location_str: str = Form(...),
+    case_id: Optional[str] = Form(None)
 ):
     try:
         incident = json.loads(incident_details)
         contact = json.loads(contact_info) if contact_info else None
 
+        # تحديد الموقع الجغرافي
         try:
             location = geolocator.geocode(location_str)
             if location:
@@ -142,9 +159,6 @@ async def submit_report(
             date_obj = None
         incident["date"] = date_obj
 
-        # إذا كان المُبلغ مؤسسة، اجعل القضية في حالة pending
-        pending_approval = (reporter_type == "institution")
-
         doc = {
             "reporter_type": reporter_type,
             "anonymous": anonymous,
@@ -153,9 +167,12 @@ async def submit_report(
             "incident_details": incident,
             "created_by": created_by,
             "status": "new",
-            "pending_approval": pending_approval,
+            "pending_approval": True,
             "created_at": datetime.utcnow()
         }
+
+        if case_id:
+            doc["case_id"] = ObjectId(case_id)
 
         inserted = reports_collection.insert_one(doc)
         report_id = inserted.inserted_id
@@ -301,29 +318,72 @@ async def create_new_case_with_report(
         print("صار خطأ أثناء الإرسال:", str(e))
         return JSONResponse(status_code=500, content={"message": "خطأ أثناء إرسال القضية: " + str(e)})
 
-# نقطة نهاية لتحديث حالة القضية
-@router.put("/cases/{case_id}/status")
-async def update_case_status(case_id: str, status: str, admin_token: str = Depends(get_admin_token)):
-    if not admin_token:
-        raise HTTPException(status_code=403, detail="Unauthorized")
-    result = reports_collection.update_one(
-        {"_id": ObjectId(case_id), "pending_approval": True},
-        {"$set": {"status": status, "pending_approval": False}}
-    )
-    if result.modified_count > 0:
-        return {"message": f"تم تحديث حالة القضية إلى {status}"}
-    raise HTTPException(status_code=404, detail="Case not found or already approved")
+
     
 @router.get("/cases")
 async def get_cases(current_user: dict = Depends(get_current_user)):
     try:
-        if current_user["role"] != "institution":
+        if current_user["role"] != "institution" and current_user["role"] != "admin":
             raise HTTPException(status_code=403, detail="Not authorized")
-        cases = list(reports_collection.find({}, {"_id": 0}))
+
+        query = {}
+        # Non-admins only see approved cases
+        if current_user["role"] != "admin":
+            query["pending_approval"] = {"$ne": True}
+
+        cases = list(reports_collection.find(query, {"_id": 0}))
         for case in cases:
             case["id"] = str(case.get("_id", case.get("id")))
-        # تحويل جميع ObjectId إلى نصوص
         cases = convert_objectid_to_str(cases)
         return {"cases": cases}
     except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+
+@router.put("/cases/{case_id}/status")
+async def update_case_status(case_id: str, status_data: StatusUpdate, admin_token: str = Depends(get_admin_token)):
+    if not admin_token:
+        raise HTTPException(status_code=403, detail="Unauthorized: Admin access required")
+    try:
+        # Validate case_id format
+        if not ObjectId.is_valid(case_id):
+            raise HTTPException(status_code=400, detail=f"Invalid case ID format: {case_id}")
+
+        # Check if case exists
+        case = reports_collection.find_one({"_id": ObjectId(case_id)})
+        if not case:
+            raise HTTPException(status_code=404, detail=f"Case not found with ID: {case_id}")
+
+        # Validate status
+        if status_data.status not in ["approved", "rejected"]:
+            raise HTTPException(status_code=400, detail=f"Invalid status: {status_data.status}")
+
+        # Prepare update data
+        update_data = {
+            "status": status_data.status,
+            "pending_approval": False,
+            "updated_at": datetime.utcnow()
+        }
+        
+        if status_data.comment:
+            update_data["rejection_comment"] = status_data.comment
+        
+        # Update the case
+        result = reports_collection.update_one(
+            {"_id": ObjectId(case_id)},
+            {"$set": update_data}
+        )
+
+        if result.modified_count > 0:
+            return {
+                "message": f"Case status updated to {status_data.status}",
+                "case_id": case_id,
+                "status": status_data.status
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to update case status")
+
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        print(f"Error updating case status: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
