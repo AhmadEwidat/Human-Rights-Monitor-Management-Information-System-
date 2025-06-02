@@ -38,7 +38,7 @@ body {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  background-color: #5e9268 !important;
+  background-color: #1976d2 !important;
   padding: 0px 0px !important;
   color: white !important;
   flex-wrap: wrap !important;
@@ -89,7 +89,7 @@ body {
 
 .login-btn {
   background-color: #f4f4f4 !important;
-  color: #3a0808 !important;
+  color: #1976d2 !important;
   border: none !important;
   border-radius: 6px !important;
   padding: 10px 20px !important;
@@ -102,7 +102,7 @@ body {
 }
 
 .login-btn:hover {
-  background-color: #523838 !important;
+  background-color: #1565c0 !important;
   color: white !important;
 }
 
@@ -126,7 +126,7 @@ body {
 }
 
 .search-button {
-  background-color: #a45858 !important;
+  background-color: #1976d2 !important;
   color: white !important;
   border: none !important;
   font-size: 18px !important;
@@ -138,7 +138,7 @@ body {
 }
 
 .search-button:hover {
-  background-color: #761616 !important;
+  background-color: #1565c0 !important;
 }
 
 body.dark-mode {
@@ -179,7 +179,7 @@ body.dark-mode .search-button {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    background-color: #a45858 !important;
+    background-color: #1976d2 !important;
     padding: 20px 40px !important;
     overflow: hidden !important;
   }

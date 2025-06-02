@@ -48,15 +48,15 @@ import { motion } from "framer-motion";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#2e7d32",
-      light: "#4caf50",
-      dark: "#1b5e20",
+      main: "#1976d2",
+      light: "#42a5f5",
+      dark: "#1565c0",
       contrastText: "#ffffff",
     },
     secondary: {
-      main: "#66bb6a",
-      light: "#81c784",
-      dark: "#388e3c",
+      main: "#42a5f5",
+      light: "#64b5f6",
+      dark: "#1976d2",
       contrastText: "#ffffff",
     },
     background: {
@@ -68,9 +68,9 @@ const theme = createTheme({
       secondary: "#546e7a",
     },
     success: {
-      main: "#43a047",
-      light: "#66bb6a",
-      dark: "#2e7d32",
+      main: "#1976d2",
+      light: "#42a5f5",
+      dark: "#1565c0",
     },
     grey: {
       50: "#fafafa",
@@ -90,12 +90,12 @@ const theme = createTheme({
     h4: {
       fontWeight: 800,
       letterSpacing: "-0.02em",
-      color: "#1b5e20",
+      color: "#1565c0",
     },
     h6: {
       fontWeight: 700,
       letterSpacing: "-0.01em",
-      color: "#2e7d32",
+      color: "#1976d2",
     },
     button: {
       fontWeight: 600,
@@ -122,7 +122,7 @@ const theme = createTheme({
             left: 0,
             right: 0,
             height: "4px",
-            background: "linear-gradient(90deg, #2e7d32 0%, #66bb6a 100%)",
+            background: "linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)",
             opacity: 0,
             transition: "opacity 0.3s ease",
           },
@@ -147,9 +147,9 @@ const theme = createTheme({
           transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         },
         contained: {
-          background: "linear-gradient(45deg, #2e7d32 30%, #43a047 90%)",
+          background: "linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)",
           "&:hover": {
-            background: "linear-gradient(45deg, #1b5e20 30%, #2e7d32 90%)",
+            background: "linear-gradient(45deg, #1565c0 30%, #1976d2 90%)",
           },
         },
       },
@@ -169,7 +169,7 @@ const theme = createTheme({
           transition: "all 0.3s ease",
           "&:hover": {
             transform: "scale(1.1)",
-            backgroundColor: alpha("#2e7d32", 0.08),
+            backgroundColor: alpha("#1976d2", 0.08),
           },
         },
       },
@@ -327,8 +327,8 @@ function CasesList() {
           minHeight: "100vh",
           py: 4,
           backgroundImage: `
-            linear-gradient(135deg, ${alpha("#4caf50", 0.05)} 0%, ${alpha("#4caf50", 0)} 100%),
-            linear-gradient(45deg, ${alpha("#2e7d32", 0.02)} 0%, ${alpha("#2e7d32", 0)} 100%)
+            linear-gradient(135deg, ${alpha("#42a5f5", 0.05)} 0%, ${alpha("#42a5f5", 0)} 100%),
+            linear-gradient(45deg, ${alpha("#1976d2", 0.02)} 0%, ${alpha("#1976d2", 0)} 100%)
           `,
         }}
       >
@@ -392,7 +392,7 @@ function CasesList() {
                 sx={{
                   px: 3,
                   py: 1.5,
-                  background: "linear-gradient(45deg, #2e7d32 30%, #43a047 90%)",
+                  background: "linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)",
                 }}
               >
                 {t("createNewCase")}

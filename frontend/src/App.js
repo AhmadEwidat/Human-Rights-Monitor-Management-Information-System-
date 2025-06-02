@@ -20,6 +20,7 @@ import SubmitReportForm from './pages/SubmitReportForm';
 import CasesList from './pages/CasesList';
 import AdminReports from './pages/AdminReports';
 import Statistics from './pages/Statistics';
+import InstitutionProfile from './pages/InstitutionProfile';
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -28,6 +29,8 @@ import ManageCases from './pages/ManageCases';
 import CreateCasePage from './pages/CreateNewCase';
 import UpdateCase from './pages/UpdateCase';
 import './index.css';
+ import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 function AppLayout() {
   const location = useLocation();
@@ -69,6 +72,7 @@ function AppLayout() {
         <Route path="/cases/:caseId" element={<CaseDetails />} />
         <Route path="/cases/:caseId/update" element={<UpdateCase />} />
         <Route path="/institution-create-case" element={<SubmitReportForm />} />
+        <Route path="/institution-profile" element={<InstitutionProfile />} />
       </Routes>
     </>
   );
