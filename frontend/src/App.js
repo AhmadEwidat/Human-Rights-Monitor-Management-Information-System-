@@ -13,7 +13,9 @@ import SubmitReportForm from './pages/SubmitReportForm';
 import CasesList from './pages/CasesList';
 import AdminReports from './pages/AdminReports';
 import Statistics from './pages/Statistics';
-import './index.css';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 function AppLayout() {
   const location = useLocation();
   const { pathname } = location;
