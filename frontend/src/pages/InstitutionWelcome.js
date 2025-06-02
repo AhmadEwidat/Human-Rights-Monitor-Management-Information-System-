@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -14,6 +14,8 @@ import {
   Divider,
   LinearProgress,
   Badge,
+  CircularProgress,
+  Chip,
 } from '@mui/material';
 import {
   Assessment as AssessmentIcon,
@@ -35,48 +37,107 @@ export default function InstitutionWelcome() {
   const { t } = useTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [stats, setStats] = useState([]);
+  const [recentActivities, setRecentActivities] = useState([]);
 
-  const stats = [
-    {
-      title: t('totalCases'),
-      value: '24',
-      icon: <DescriptionIcon />,
-      color: theme.palette.primary.main,
-      trend: '+12%',
-    },
-    {
-      title: t('activeReports'),
-      value: '18',
-      icon: <AssessmentIcon />,
-      color: theme.palette.success.main,
-      trend: '+8%',
-    },
-    {
-      title: t('pendingReviews'),
-      value: '6',
-      icon: <CheckCircleIcon />,
-      color: theme.palette.warning.main,
-      trend: '-3%',
-    },
-  ];
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
-  const recentActivities = [
-    {
-      title: t('newCaseReported'),
-      time: '2 hours ago',
-      icon: <DescriptionIcon />,
-    },
-    {
-      title: t('reportUpdated'),
-      time: '4 hours ago',
-      icon: <AssessmentIcon />,
-    },
-    {
-      title: t('caseResolved'),
-      time: '1 day ago',
-      icon: <CheckCircleIcon />,
-    },
-  ];
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Fetch all cases
+      const response = await fetch('http://localhost:8000/reports/cases', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('jwt_token')}` },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard data');
+      }
+
+      const data = await response.json();
+      const cases = data.cases || [];
+
+      // Calculate statistics
+      const totalCases = cases.length;
+      const activeReports = cases.filter(c => c.status === 'under_investigation').length;
+      const pendingReviews = cases.filter(c => c.pending_approval).length;
+
+      // Format stats
+      setStats([
+        {
+          title: t('totalCases'),
+          value: totalCases.toString(),
+          icon: <DescriptionIcon />,
+          color: theme.palette.primary.main,
+          trend: '+12%', // This could be calculated based on historical data
+        },
+        {
+          title: t('activeReports'),
+          value: activeReports.toString(),
+          icon: <AssessmentIcon />,
+          color: theme.palette.success.main,
+          trend: '+8%',
+        },
+        {
+          title: t('pendingReviews'),
+          value: pendingReviews.toString(),
+          icon: <CheckCircleIcon />,
+          color: theme.palette.warning.main,
+          trend: '-3%',
+        },
+      ]);
+
+      // Format recent activities
+      const recentCases = cases
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 3);
+
+      setRecentActivities(
+        recentCases.map(caseItem => ({
+          title: caseItem.incident_details?.description || t('newCaseReported'),
+          time: formatTimeAgo(new Date(caseItem.created_at)),
+          icon: <DescriptionIcon />,
+          status: caseItem.status,
+        }))
+      );
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTimeAgo = (date) => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return t('justNow');
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} ${t('minutesAgo')}`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} ${t('hoursAgo')}`;
+    return `${Math.floor(diffInSeconds / 86400)} ${t('daysAgo')}`;
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography color="error">{t('errorLoadingDashboard')}: {error}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -137,7 +198,7 @@ export default function InstitutionWelcome() {
                 },
               }}
             >
-              <Badge badgeContent={3} color="error">
+              <Badge badgeContent={stats[2]?.value || 0} color="error">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
@@ -198,147 +259,93 @@ export default function InstitutionWelcome() {
                     </Typography>
                   </Box>
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <TrendingUpIcon
-                    sx={{
-                      color: stat.trend.startsWith('+') ? 'success.main' : 'error.main',
-                      mr: 1,
-                    }}
-                  />
-                  <Typography
-                    variant="body2"
-                    color={stat.trend.startsWith('+') ? 'success.main' : 'error.main'}
-                    sx={{ fontWeight: 600 }}
-                  >
-                    {stat.trend}
-                  </Typography>
-                </Box>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: stat.trend.startsWith('+') ? 'success.main' : 'error.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                  }}
+                >
+                  <TrendingUpIcon sx={{ fontSize: 16 }} />
+                  {stat.trend}
+                </Typography>
               </MotionPaper>
             </Grid>
           ))}
         </Grid>
 
-        {/* Main Content Grid */}
-        <Grid container spacing={3}>
-          {/* Recent Activity */}
-          <Grid item xs={12} md={6}>
-            <MotionPaper
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4 }}
-              sx={{
-                p: 3,
-                borderRadius: 3,
-                background: alpha('#fff', 0.8),
-                backdropFilter: 'blur(10px)',
-                height: '100%',
-              }}
-            >
-              <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-                {t('recentActivity')}
-              </Typography>
-              <Stack spacing={2}>
-                {recentActivities.map((activity, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      p: 2,
-                      borderRadius: 2,
-                      backgroundColor: alpha(theme.palette.primary.main, 0.05),
-                    }}
-                  >
-                    <Avatar
-                      sx={{
-                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                        color: theme.palette.primary.main,
-                        mr: 2,
-                      }}
-                    >
-                      {activity.icon}
-                    </Avatar>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                        {activity.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {activity.time}
-                      </Typography>
-                    </Box>
-                  </Box>
-                ))}
-              </Stack>
-            </MotionPaper>
-          </Grid>
-
-          {/* Quick Actions */}
-          <Grid item xs={12} md={6}>
-            <MotionPaper
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4 }}
-              sx={{
-                p: 3,
-                borderRadius: 3,
-                background: alpha('#fff', 0.8),
-                backdropFilter: 'blur(10px)',
-                height: '100%',
-              }}
-            >
-              <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-                {t('quickActions')}
-              </Typography>
-              <Stack spacing={2}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  startIcon={<DescriptionIcon />}
-                  onClick={() => navigate('/institution-create-new-case')}
+        {/* Recent Activities */}
+        <MotionPaper
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          sx={{
+            p: 3,
+            borderRadius: 3,
+            background: alpha('#fff', 0.8),
+            backdropFilter: 'blur(10px)',
+            border: '1px solid',
+            borderColor: alpha(theme.palette.primary.main, 0.1),
+          }}
+        >
+          <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
+            {t('recentActivities')}
+          </Typography>
+          <Stack spacing={2}>
+            {recentActivities.map((activity, index) => (
+              <Box
+                key={index}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                }}
+              >
+                <Avatar
                   sx={{
-                    py: 1.5,
-                    background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.primary.light} 90%)`,
-                    '&:hover': {
-                      background: `linear-gradient(45deg, ${theme.palette.primary.dark} 30%, ${theme.palette.primary.main} 90%)`,
-                    },
+                    bgcolor: alpha(theme.palette.primary.main, 0.1),
+                    color: theme.palette.primary.main,
+                    mr: 2,
                   }}
                 >
-                  {t('createNewCase')}
-                </Button>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<AssessmentIcon />}
-                  onClick={() => navigate('/cases-list')}
+                  {activity.icon}
+                </Avatar>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+                    {activity.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {activity.time}
+                  </Typography>
+                </Box>
+                <Chip
+                  label={t(activity.status)}
+                  size="small"
                   sx={{
-                    py: 1.5,
-                    borderWidth: 2,
-                    '&:hover': {
-                      borderWidth: 2,
-                    },
+                    backgroundColor: alpha(
+                      activity.status === 'approved'
+                        ? theme.palette.success.main
+                        : activity.status === 'rejected'
+                        ? theme.palette.error.main
+                        : theme.palette.warning.main,
+                      0.1
+                    ),
+                    color:
+                      activity.status === 'approved'
+                        ? 'success.main'
+                        : activity.status === 'rejected'
+                        ? 'error.main'
+                        : 'warning.main',
                   }}
-                >
-                  {t('viewReports')}
-                </Button>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<PeopleIcon />}
-                  onClick={() => navigate('/institution-profile')}
-                  sx={{
-                    py: 1.5,
-                    borderWidth: 2,
-                    '&:hover': {
-                      borderWidth: 2,
-                    },
-                  }}
-                >
-                  {t('manageProfile')}
-                </Button>
-              </Stack>
-            </MotionPaper>
-          </Grid>
-        </Grid>
+                />
+              </Box>
+            ))}
+          </Stack>
+        </MotionPaper>
       </Container>
     </Box>
   );

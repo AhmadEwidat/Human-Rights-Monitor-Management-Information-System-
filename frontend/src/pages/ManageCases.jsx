@@ -2,47 +2,68 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  Button,
+  Stack,
+  alpha,
+  TextField,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
+import { motion } from 'framer-motion';
+import EditIcon from '@mui/icons-material/Edit';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+
+const MotionPaper = motion(Paper);
 
 const ManageCases = () => {
   const [cases, setCases] = useState([]);
   const [filter, setFilter] = useState({ status: '', region: '', violation_type: '' });
   const navigate = useNavigate();
 
-  
-
-
   const fetchCases = async () => {
-  try {
-    const response = await axios.get('http://localhost:8000/cases/', {
-      params: filter
-    });
-    setCases(response.data);
-  } catch (error) {
-    console.error('Error fetching cases:', error);
-  }
-};
+    try {
+      const response = await axios.get('http://localhost:8000/cases/', {
+        params: filter
+      });
+      setCases(response.data);
+    } catch (error) {
+      console.error('Error fetching cases:', error);
+    }
+  };
 
-useEffect(() => {
-  fetchCases();
-}, [filter]);
+  useEffect(() => {
+    fetchCases();
+  }, [filter]);
 
   const toggleArchive = async (id, currentStatus) => {
-  const isArchived = currentStatus === "archived";
+    const isArchived = currentStatus === "archived";
+    const confirmText = isArchived
+      ? "Do you want to unarchive this case?"
+      : "Are you sure you want to archive this case?";
 
-  const confirmText = isArchived
-    ? "Do you want to unarchive this case?"
-    : "Are you sure you want to archive this case?";
+    if (!window.confirm(confirmText)) return;
 
-  if (!window.confirm(confirmText)) return;
-
-  try {
-    const newStatus = isArchived ? "new" : "archived";
-    await axios.patch(`http://localhost:8000/cases/${id}`, { status: newStatus });
-    fetchCases();  // تحديث القائمة بعد التعديل
-  } catch (error) {
-    console.error("Error toggling archive status:", error);
-  }
-};
+    try {
+      const newStatus = isArchived ? "new" : "archived";
+      await axios.patch(`http://localhost:8000/cases/${id}`, { status: newStatus });
+      fetchCases();
+    } catch (error) {
+      console.error("Error toggling archive status:", error);
+    }
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to archive this case?")) return;
@@ -58,119 +79,167 @@ useEffect(() => {
   };
 
   return (
-    <div style={{ padding: '30px', backgroundColor: '#f4f6f8', minHeight: '100vh' }}>
-      <h2 style={{ fontSize: '28px', marginBottom: '20px', color: '#1f2937' }}>📁 Manage Cases</h2>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: `
+          linear-gradient(135deg, ${alpha('#42a5f5', 0.05)} 0%, ${alpha('#42a5f5', 0)} 100%),
+          linear-gradient(45deg, ${alpha('#1976d2', 0.02)} 0%, ${alpha('#1976d2', 0)} 100%)
+        `,
+        py: 4,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            mb: 4,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 2,
+          }}
+        >
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 800,
+              color: '#1565c0',
+              mb: 1,
+              position: 'relative',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                bottom: -8,
+                left: 0,
+                width: 60,
+                height: 4,
+                background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)',
+                borderRadius: 2,
+              },
+            }}
+          >
+            Manage Cases
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate('/admin/cases/create')}
+            sx={{
+              background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
+              '&:hover': {
+                background: 'linear-gradient(45deg, #1565c0 30%, #1976d2 90%)',
+              },
+            }}
+          >
+            Create New Case
+          </Button>
+        </Box>
 
-      <button
-        onClick={() => navigate('/admin/cases/create')}
-        style={{
-          backgroundColor: '#2563eb',
-          color: '#fff',
-          padding: '8px 16px',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          marginBottom: '20px'
-        }}>
-        + Create New Case
-      </button>
+        <MotionPaper
+          sx={{
+            p: 3,
+            mb: 4,
+            borderRadius: 3,
+            background: alpha('#fff', 0.8),
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <TextField
+              fullWidth
+              label="Filter by region"
+              value={filter.region}
+              onChange={(e) => setFilter({ ...filter, region: e.target.value })}
+              size="small"
+            />
+            <TextField
+              fullWidth
+              label="Filter by status"
+              value={filter.status}
+              onChange={(e) => setFilter({ ...filter, status: e.target.value })}
+              size="small"
+            />
+            <TextField
+              fullWidth
+              label="Filter by violation"
+              value={filter.violation_type}
+              onChange={(e) => setFilter({ ...filter, violation_type: e.target.value })}
+              size="small"
+            />
+          </Stack>
+        </MotionPaper>
 
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        <input
-          type="text"
-          placeholder="Filter by region"
-          style={{ padding: '6px', borderRadius: '4px', border: '1px solid #ccc' }}
-          onChange={(e) => setFilter({ ...filter, region: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Filter by status"
-          style={{ padding: '6px', borderRadius: '4px', border: '1px solid #ccc' }}
-          onChange={(e) => setFilter({ ...filter, status: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Filter by violation"
-          style={{ padding: '6px', borderRadius: '4px', border: '1px solid #ccc' }}
-          onChange={(e) => setFilter({ ...filter, violation_type: e.target.value })}
-        />
-      </div>
-
-      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff' }}>
-        <thead>
-          <tr style={{ backgroundColor: '#e5e7eb' }}>
-            <th style={{ padding: '12px', border: '1px solid #ccc', textAlign: 'left' }}>ID</th>
-            <th style={{ padding: '12px', border: '1px solid #ccc', textAlign: 'left' }}>Title</th>
-            <th style={{ padding: '12px', border: '1px solid #ccc', textAlign: 'left' }}>Status</th>
-            <th style={{ padding: '12px', border: '1px solid #ccc', textAlign: 'left' }}>Priority</th>
-            <th style={{ padding: '12px', border: '1px solid #ccc', textAlign: 'left' }}>Reported</th>
-            <th style={{ padding: '12px', border: '1px solid #ccc', textAlign: 'left' }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {cases.length === 0 ? (
-            <tr>
-              <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
-                No cases found.
-              </td>
-            </tr>
-          ) : (
-            cases.map((c) => (
-              <tr key={c.case_id} style={{ borderBottom: '1px solid #ccc' }}>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{c.case_id}</td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{c.title?.en}</td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{c.status}</td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>{c.priority}</td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                  {new Date(c.date_reported).toLocaleDateString()}
-                </td>
-                <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                  <button
-                    onClick={() => navigate(`/cases/${c._id}`)}
-                    style={{
-                      marginRight: '6px',
-                      backgroundColor: '#10b981',
-                      color: 'white',
-                      border: 'none',
-                      padding: '6px 10px',
-                      borderRadius: '3px'
-                    }}
-                  >
-                    Details
-                  </button>
-                  <button
-                    onClick={() => navigate(`/cases/${c._id}/update`)}
-                    style={{
-                      marginRight: '6px',
-                      backgroundColor: '#f59e0b',
-                      color: 'white',
-                      border: 'none',
-                      padding: '6px 10px',
-                      borderRadius: '3px'
-                    }}
-                  >
-                    Update
-                  </button>
-                  <button
-  onClick={() => toggleArchive(c._id, c.status)}
-  style={{
-    backgroundColor: c.status === "archived" ? "#9ca3af" : "#ef4444",
-    color: 'white',
-    border: 'none',
-    padding: '6px 10px',
-    borderRadius: '3px'
-  }}
->
-  {c.status === "archived" ? "Archived" : "Archive"}
-</button>
-
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+        <TableContainer
+          component={MotionPaper}
+          sx={{
+            borderRadius: 3,
+            background: alpha('#fff', 0.8),
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Case ID</TableCell>
+                <TableCell>Title</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Priority</TableCell>
+                <TableCell>Date Reported</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {cases.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                    <Typography color="text.secondary">No cases found.</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                cases.map((c) => (
+                  <TableRow key={c.case_id}>
+                    <TableCell>{c.case_id}</TableCell>
+                    <TableCell>{c.title?.en}</TableCell>
+                    <TableCell>{c.status}</TableCell>
+                    <TableCell>{c.priority}</TableCell>
+                    <TableCell>{new Date(c.date_reported).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <Stack direction="row" spacing={1}>
+                        <Tooltip title="View Details">
+                          <IconButton
+                            onClick={() => navigate(`/cases/${c._id}`)}
+                            sx={{ color: '#1976d2' }}
+                          >
+                            <VisibilityIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Edit Case">
+                          <IconButton
+                            onClick={() => navigate(`/cases/${c._id}/update`)}
+                            sx={{ color: '#1976d2' }}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Archive Case">
+                          <IconButton
+                            onClick={() => handleDelete(c._id)}
+                            sx={{ color: '#d32f2f' }}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Container>
+    </Box>
   );
 };
 

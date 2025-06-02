@@ -1,118 +1,169 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  Button,
+  Stack,
+  alpha,
+  CircularProgress,
+  Alert,
+  List,
+  ListItem,
+  ListItemText,
+  Chip,
+  Divider,
+} from '@mui/material';
+import { motion } from 'framer-motion';
+
+const MotionPaper = motion(Paper);
 
 function ReportsPage() {
   const { t, i18n } = useTranslation();
   const [reports, setReports] = useState([]);
-  const [filters, setFilters] = useState({
-    status: "",
-    start_date: "",
-    end_date: "",
-    location: "",
-  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchReports();
-  }, [filters]);
+  }, []);
 
   const fetchReports = async () => {
     setLoading(true);
     setError(null);
     try {
-      const queryParams = new URLSearchParams(filters).toString();
-      const response = await fetch(`http://localhost:8000/reports/?${queryParams}`);
-      console.log("Response status:", response.status); // تتبع الحالة
+      const response = await fetch("http://localhost:8000/reports/", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("jwt_token")}` },
+      });
       if (response.ok) {
         const data = await response.json();
-        console.log("Fetched data:", data); // تتبع البيانات
-        setReports(data.reports || []);
+        setReports(data);
       } else {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
     } catch (err) {
-      console.error("Fetch error:", err);
       setError(t("fetchError") + ": " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
-  };
-
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>{t("reportsTitle")}</h2>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: `
+          linear-gradient(135deg, ${alpha('#42a5f5', 0.05)} 0%, ${alpha('#42a5f5', 0)} 100%),
+          linear-gradient(45deg, ${alpha('#1976d2', 0.02)} 0%, ${alpha('#1976d2', 0)} 100%)
+        `,
+        py: 4,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 800,
+            color: '#1565c0',
+            mb: 4,
+            position: 'relative',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: -8,
+              left: 0,
+              width: 60,
+              height: 4,
+              background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)',
+              borderRadius: 2,
+            },
+          }}
+        >
+          {t("reports")}
+        </Typography>
 
-      {/* فلاتر التقارير */}
-      <div style={{ marginBottom: "1rem" }}>
-        <label>
-          {t("status")}:
-          <select name="status" onChange={handleFilterChange} value={filters.status}>
-            <option value="">{t("all")}</option>
-            <option value="new">{t("new")}</option>
-            <option value="under_investigation">{t("underInvestigation")}</option>
-            <option value="resolved">{t("resolved")}</option>
-          </select>
-        </label>
-        <label>
-          {t("startDate")}:
-          <input
-            type="date"
-            name="start_date"
-            onChange={handleFilterChange}
-            value={filters.start_date}
-          />
-        </label>
-        <label>
-          {t("endDate")}:
-          <input
-            type="date"
-            name="end_date"
-            onChange={handleFilterChange}
-            value={filters.end_date}
-          />
-        </label>
-        <label>
-          {t("location")}:
-          <input
-            type="text"
-            name="location"
-            onChange={handleFilterChange}
-            placeholder={t("placeholderLocation")}
-            value={filters.location}
-          />
-        </label>
-        <button onClick={fetchReports} style={{ marginLeft: "1rem" }}>
-          {t("applyFilters")}
-        </button>
-      </div>
-
-      {/* عرض التقارير أو الأخطاء */}
-      {loading ? (
-        <p>{t("loading")}</p>
-      ) : error ? (
-        <p style={{ color: "red" }}>{error}</p>
-      ) : reports.length > 0 ? (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {reports.map((report, index) => (
-            <li key={index} style={{ marginBottom: "1rem", padding: "1rem", border: "1px solid #ccc", borderRadius: "4px" }}>
-              <strong>{t("incidentDetails")}:</strong> {report.incident_details?.description || "N/A"}
-              <br />
-              <strong>{t("status")}:</strong> {report.status || "N/A"}
-              <br />
-              <strong>{t("date")}:</strong> {new Date(report.created_at).toLocaleDateString()}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>{t("noReports")}</p>
-      )}
-    </div>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+            <CircularProgress sx={{ color: '#1976d2' }} />
+          </Box>
+        ) : error ? (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        ) : reports.length > 0 ? (
+          <List>
+            {reports.map((report, index) => (
+              <MotionPaper
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                sx={{
+                  mb: 2,
+                  p: 3,
+                  borderRadius: 3,
+                  background: alpha('#fff', 0.8),
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid',
+                  borderColor: alpha('#1976d2', 0.1),
+                }}
+              >
+                <ListItemText
+                  primary={
+                    <Typography variant="h6" sx={{ color: '#1565c0', mb: 1 }}>
+                      {t("incidentDetails")}
+                    </Typography>
+                  }
+                  secondary={
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="body1" sx={{ mb: 1 }}>
+                        {report.incident_details?.description || t("notAvailable")}
+                      </Typography>
+                      <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+                        <Chip
+                          label={report.status || t("notAvailable")}
+                          size="small"
+                          sx={{
+                            backgroundColor: alpha('#1976d2', 0.1),
+                            color: '#1976d2',
+                            fontWeight: 500,
+                          }}
+                        />
+                        <Chip
+                          label={new Date(report.created_at).toLocaleDateString()}
+                          size="small"
+                          sx={{
+                            backgroundColor: alpha('#1976d2', 0.1),
+                            color: '#1976d2',
+                            fontWeight: 500,
+                          }}
+                        />
+                      </Stack>
+                    </Box>
+                  }
+                />
+              </MotionPaper>
+            ))}
+          </List>
+        ) : (
+          <Paper
+            sx={{
+              p: 4,
+              textAlign: 'center',
+              borderRadius: 3,
+              background: alpha('#fff', 0.8),
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            <Typography variant="h6" color="text.secondary">
+              {t("noReports")}
+            </Typography>
+          </Paper>
+        )}
+      </Container>
+    </Box>
   );
 }
 

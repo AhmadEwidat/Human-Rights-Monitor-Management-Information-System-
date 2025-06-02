@@ -1,6 +1,7 @@
 .login-wrapper {
   height: 100vh;
-  background: linear-gradient(to right, #d6f0e4, #5e9268);
+  background: linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(25, 118, 210, 0) 100%),
+              linear-gradient(45deg, rgba(21, 101, 192, 0.02) 0%, rgba(21, 101, 192, 0) 100%);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -10,10 +11,11 @@
   background: white;
   width: 900px;
   height: 500px;
-  border-radius: 10px;
+  border-radius: 20px;
   display: flex;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  border: 1px solid rgba(25, 118, 210, 0.1);
 }
 
 .login-left {
@@ -26,14 +28,15 @@
 
 .login-title {
   font-size: 24px;
-  color: #5e9268;
+  color: #1565c0;
   margin-bottom: 30px;
   text-align: center;
+  font-weight: 800;
 }
 
 .login-subtitle {
   font-size: 14px !important;
-  color: #5e9268 !important;
+  color: #1976d2 !important;
   text-align: center !important;
   margin-bottom: 25px !important;
 }
@@ -42,9 +45,18 @@
   width: 100%;
   padding: 15px 20px;
   margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 30px;
+  border: 2px solid #1976d2;
+  border-radius: 12px;
   font-size: 14px;
+  background-color: #ffffff;
+  color: #2c3e50;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.login-form input:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+  outline: none;
 }
 
 .login-options {
@@ -56,25 +68,37 @@
 }
 
 .forgot-password {
-  color: #5e9268;
+  color: #1976d2;
   text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.forgot-password:hover {
+  color: #1565c0;
 }
 
 form button {
   width: 100%;
   padding: 15px;
-  background: linear-gradient(135deg, #4e7a57, #5e9268) !important;
+  background: linear-gradient(45deg, #1976d2 30%, #42a5f5 90%) !important;
   color: white;
   border: none;
   border-radius: 12px;
   font-weight: bold;
   font-size: 18px;
   cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+form button:hover {
+  background: linear-gradient(45deg, #1565c0 30%, #1976d2 90%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .login-right {
   flex: 1;
-  background: #5e9268;
+  background: linear-gradient(45deg, #1976d2 30%, #42a5f5 90%);
   display: flex;
   align-items: center;
   justify-content: center;

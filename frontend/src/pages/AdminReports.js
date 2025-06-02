@@ -1,6 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  Button,
+  Stack,
+  alpha,
+  CircularProgress,
+  Alert,
+  List,
+  ListItem,
+  ListItemText,
+  Chip,
+  Divider,
+} from '@mui/material';
+import { motion } from 'framer-motion';
+
+const MotionPaper = motion(Paper);
 
 function AdminReports() {
   const { t } = useTranslation();
@@ -59,7 +78,7 @@ function AdminReports() {
       });
       
       if (response.ok) {
-        await fetchCases(); // Refresh the cases list
+        await fetchCases();
         alert(t("statusUpdated"));
       } else {
         const errorData = await response.json();
@@ -72,76 +91,138 @@ function AdminReports() {
   };
 
   return (
-    <div style={{ padding: "2rem", maxWidth: "1200px", margin: "0 auto" }}>
-      <h2 style={{ color: "#2e7d32", marginBottom: "1.5rem" }}>{t("pendingCases")}</h2>
-      {loading ? (
-        <p>{t("loading")}</p>
-      ) : error ? (
-        <p style={{ color: "red" }}>{error}</p>
-      ) : cases.length > 0 ? (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {cases.map((caseItem) => (
-            <li
-              key={caseItem.id}
-              style={{
-                marginBottom: "1rem",
-                padding: "1.5rem",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                background: "#fff",
-              }}
-            >
-              <div><strong>{t("caseId")}:</strong> {caseItem.id}</div>
-              <div>
-                <strong>{t("description")}:</strong>{" "}
-                {caseItem.incident_details?.description || "غير متوفر"}
-              </div>
-              <div>
-                <strong>{t("location")}:</strong>{" "}
-                {caseItem.incident_details?.location?.country || "غير محدد"}
-              </div>
-              <div>
-                <strong>{t("violationTypes")}:</strong>{" "}
-                {caseItem.incident_details?.violation_types?.join(", ") || "غير متوفر"}
-              </div>
-              <div>
-                <strong>{t("date")}:</strong>{" "}
-                {new Date(caseItem.created_at).toLocaleDateString()}
-              </div>
-              <div style={{ marginTop: "1rem" }}>
-                <button
-                  onClick={() => handleUpdateStatus(caseItem.id, "approved")}
-                  style={{
-                    background: "#2e7d32",
-                    color: "white",
-                    padding: "0.5rem 1rem",
-                    border: "none",
-                    borderRadius: "4px",
-                    marginRight: "1rem",
-                  }}
-                >
-                  {t("approve")}
-                </button>
-                <button
-                  onClick={() => handleUpdateStatus(caseItem.id, "rejected", prompt(t("rejectComment")))}
-                  style={{
-                    background: "#d32f2f",
-                    color: "white",
-                    padding: "0.5rem 1rem",
-                    border: "none",
-                    borderRadius: "4px",
-                  }}
-                >
-                  {t("reject")}
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>{t("noPendingCases")}</p>
-      )}
-    </div>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: `
+          linear-gradient(135deg, ${alpha('#42a5f5', 0.05)} 0%, ${alpha('#42a5f5', 0)} 100%),
+          linear-gradient(45deg, ${alpha('#1976d2', 0.02)} 0%, ${alpha('#1976d2', 0)} 100%)
+        `,
+        py: 4,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 800,
+            color: '#1565c0',
+            mb: 3,
+            position: 'relative',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: -8,
+              left: 0,
+              width: 60,
+              height: 4,
+              background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)',
+              borderRadius: 2,
+            },
+          }}
+        >
+          {t("pendingCases")}
+        </Typography>
+
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+            <CircularProgress sx={{ color: '#1976d2' }} />
+          </Box>
+        ) : error ? (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        ) : cases.length > 0 ? (
+          <List>
+            {cases.map((caseItem) => (
+              <MotionPaper
+                key={caseItem.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                sx={{
+                  mb: 2,
+                  p: 3,
+                  borderRadius: 3,
+                  background: alpha('#fff', 0.8),
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid',
+                  borderColor: alpha('#1976d2', 0.1),
+                }}
+              >
+                <ListItemText
+                  primary={
+                    <Typography variant="h6" sx={{ color: '#1565c0', mb: 1 }}>
+                      {t("caseId")}: {caseItem.id}
+                    </Typography>
+                  }
+                  secondary={
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="body1" sx={{ mb: 1 }}>
+                        <strong>{t("description")}:</strong>{" "}
+                        {caseItem.incident_details?.description || t("notAvailable")}
+                      </Typography>
+                      <Typography variant="body1" sx={{ mb: 1 }}>
+                        <strong>{t("location")}:</strong>{" "}
+                        {caseItem.incident_details?.location?.country || t("notSpecified")}
+                      </Typography>
+                      <Typography variant="body1" sx={{ mb: 1 }}>
+                        <strong>{t("violationTypes")}:</strong>{" "}
+                        {caseItem.incident_details?.violation_types?.join(", ") || t("notAvailable")}
+                      </Typography>
+                      <Typography variant="body1" sx={{ mb: 2 }}>
+                        <strong>{t("date")}:</strong>{" "}
+                        {new Date(caseItem.created_at).toLocaleDateString()}
+                      </Typography>
+                    </Box>
+                  }
+                />
+                <Divider sx={{ my: 2 }} />
+                <Stack direction="row" spacing={2}>
+                  <Button
+                    variant="contained"
+                    onClick={() => handleUpdateStatus(caseItem.id, "approved")}
+                    sx={{
+                      background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
+                      '&:hover': {
+                        background: 'linear-gradient(45deg, #1565c0 30%, #1976d2 90%)',
+                      },
+                    }}
+                  >
+                    {t("approve")}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => handleUpdateStatus(caseItem.id, "rejected", prompt(t("rejectComment")))}
+                    sx={{
+                      background: 'linear-gradient(45deg, #d32f2f 30%, #ef5350 90%)',
+                      '&:hover': {
+                        background: 'linear-gradient(45deg, #c62828 30%, #d32f2f 90%)',
+                      },
+                    }}
+                  >
+                    {t("reject")}
+                  </Button>
+                </Stack>
+              </MotionPaper>
+            ))}
+          </List>
+        ) : (
+          <Paper
+            sx={{
+              p: 4,
+              textAlign: 'center',
+              borderRadius: 3,
+              background: alpha('#fff', 0.8),
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            <Typography variant="h6" color="text.secondary">
+              {t("noPendingCases")}
+            </Typography>
+          </Paper>
+        )}
+      </Container>
+    </Box>
   );
 }
 
