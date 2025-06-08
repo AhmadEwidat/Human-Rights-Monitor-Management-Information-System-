@@ -16,9 +16,11 @@ from pydantic import BaseModel
 
 # إعداد الراوتر
 router = APIRouter()
+
 class StatusUpdate(BaseModel):
     status: str  # حقل إلزامي
     comment: str | None = None
+
 # إعدادات الاتصال بقاعدة البيانات
 uri = "mongodb+srv://asma:asmaasma@cluster0.kbgepxe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 client = MongoClient(uri, server_api=ServerApi('1'))
@@ -122,6 +124,7 @@ async def get_reports(
         return {"reports": reports}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching reports: {str(e)}")
+
 @router.post("/")
 async def submit_report(
     anonymous: bool = Form(...),
@@ -217,6 +220,7 @@ async def submit_report(
     except Exception as e:
         print("صار خطأ أثناء الإرسال:", str(e))
         return JSONResponse(status_code=500, content={"message": "خطأ أثناء إرسال التقرير: " + str(e)})
+
 @router.get("/case-types")
 async def get_case_types():
     # بيانات ثابتة، يمكن استبدالها ببيانات من قاعدة بيانات
@@ -226,6 +230,7 @@ async def get_case_types():
         {"name_en": "Discrimination", "name_ar": "التمييز"},
     ]
     return case_types
+
 # نقطة نهاية لإنشاء قضية جديدة مع تقرير
 @router.post("/cases/new-with-report/")
 async def create_new_case_with_report(
@@ -318,8 +323,6 @@ async def create_new_case_with_report(
         print("صار خطأ أثناء الإرسال:", str(e))
         return JSONResponse(status_code=500, content={"message": "خطأ أثناء إرسال القضية: " + str(e)})
 
-
-    
 @router.get("/cases")
 async def get_cases(current_user: dict = Depends(get_current_user)):
     try:
@@ -331,12 +334,20 @@ async def get_cases(current_user: dict = Depends(get_current_user)):
         if current_user["role"] != "admin":
             query["pending_approval"] = {"$ne": True}
 
-        cases = list(reports_collection.find(query, {"_id": 0}))
+        # Get cases and convert ObjectIds to strings
+        cases = list(reports_collection.find(query))
+        
+        # Convert ObjectIds to strings
         for case in cases:
-            case["id"] = str(case.get("_id", case.get("id")))
-        cases = convert_objectid_to_str(cases)
+            case["_id"] = str(case["_id"])
+            if "evidence_ids" in case:
+                case["evidence_ids"] = [str(eid) for eid in case["evidence_ids"]]
+            if "case_id" in case:
+                case["case_id"] = str(case["case_id"])
+            
         return {"cases": cases}
     except Exception as e:
+        print(f"Error fetching cases: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
 @router.put("/cases/{case_id}/status")

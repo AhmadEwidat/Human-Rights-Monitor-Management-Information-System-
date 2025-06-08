@@ -35,12 +35,27 @@ const ManageCases = () => {
 
   const fetchCases = async () => {
     try {
+      const token = localStorage.getItem('jwt_token');
+      if (!token) {
+        console.error('No authentication token found');
+        navigate('/login');
+        return;
+      }
+
       const response = await axios.get('http://localhost:8000/cases/', {
-        params: filter
+        params: filter,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
-      setCases(response.data);
+      setCases(response.data.cases || []);
     } catch (error) {
       console.error('Error fetching cases:', error);
+      if (error.response?.status === 401) {
+        // Token expired or invalid
+        localStorage.removeItem('jwt_token');
+        navigate('/login');
+      }
     }
   };
 
@@ -57,24 +72,42 @@ const ManageCases = () => {
     if (!window.confirm(confirmText)) return;
 
     try {
+      const token = localStorage.getItem('jwt_token');
       const newStatus = isArchived ? "new" : "archived";
-      await axios.patch(`http://localhost:8000/cases/${id}`, { status: newStatus });
+      await axios.patch(`http://localhost:8000/cases/${id}`, 
+        { status: newStatus },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
       fetchCases();
     } catch (error) {
       console.error("Error toggling archive status:", error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem('jwt_token');
+        navigate('/login');
+      }
     }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to archive this case?")) return;
     try {
-      await axios.delete(`http://localhost:8000/cases/${id}`);
-      const response = await axios.get('http://localhost:8000/cases/', {
-        params: filter
+      const token = localStorage.getItem('jwt_token');
+      await axios.delete(`http://localhost:8000/cases/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
-      setCases(response.data);
+      fetchCases();
     } catch (error) {
       console.error("Error archiving case:", error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem('jwt_token');
+        navigate('/login');
+      }
     }
   };
 
