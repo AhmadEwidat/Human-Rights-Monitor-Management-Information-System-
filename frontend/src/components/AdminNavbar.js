@@ -1,13 +1,10 @@
-// src/components/AdminNavbar.js
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next'; // ✨ إضافة الترجمة
 import './AdminNavbar.css';
 import logo from '../assets/logo.png';
 
 const AdminNavbar = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation(); // ✨ استخدام الترجمة
 
   const handleLogout = () => {
     localStorage.removeItem('jwt_token');
@@ -23,18 +20,18 @@ const AdminNavbar = () => {
       </div>
 
       <ul className="admin-links">
-        <li><Link to="/admin-welcome">{t('dashboard')}</Link></li>
-        <li><Link to="/admin-institutions">{t('manageInstitutions')}</Link></li>
-        <li><Link to="/admin-reports">{t('reviewReports')}</Link></li>
-        <li><Link to="/admin-users">{t('manageUsers')}</Link></li>
-        <li><Link to="/admin/cases">{t('manageCases')}</Link></li>
-        <li><Link to="/admin-settings">{t('settings')}</Link></li>
+        <li><Link to="/admin-welcome">Dashboard</Link></li>
+        <li><Link to="/admin-institutions">Manage Institutions</Link></li>
+        <li><Link to="/admin-reports">Review Reports</Link></li>
+        <li><Link to="/admin-users">Manage Users</Link></li>
+        <li><Link to="/admin/cases">Manage Cases</Link></li>
+        <li><Link to="/admin-settings">Settings</Link></li>
         <li><Link to="/cases">Cases</Link></li>
-        <li><Link to="/admin-reports">{t('pendingCases')}</Link></li>
+        <li><Link to="/admin-reports">Pending Cases</Link></li>
       </ul>
 
       <button onClick={handleLogout} className="admin-logout-btn">
-        {t('logout')}
+        Logout
       </button>
     </nav>
   );

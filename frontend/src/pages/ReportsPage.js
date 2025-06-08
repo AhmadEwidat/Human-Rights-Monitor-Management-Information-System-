@@ -1,27 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import {
   Box,
   Container,
   Typography,
   Paper,
-  Button,
-  Stack,
-  alpha,
   CircularProgress,
   Alert,
   List,
-  ListItem,
   ListItemText,
   Chip,
-  Divider,
-} from '@mui/material';
-import { motion } from 'framer-motion';
+  Stack,
+  alpha,
+} from "@mui/material";
+import { motion } from "framer-motion";
 
 const MotionPaper = motion(Paper);
 
 function ReportsPage() {
-  const { t, i18n } = useTranslation();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,7 +39,7 @@ function ReportsPage() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
     } catch (err) {
-      setError(t("fetchError") + ": " + err.message);
+      setError("Failed to fetch reports: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -81,7 +76,7 @@ function ReportsPage() {
             },
           }}
         >
-          {t("reports")}
+          Reports
         </Typography>
 
         {loading ? (
@@ -113,17 +108,17 @@ function ReportsPage() {
                 <ListItemText
                   primary={
                     <Typography variant="h6" sx={{ color: '#1565c0', mb: 1 }}>
-                      {t("incidentDetails")}
+                      Incident Details
                     </Typography>
                   }
                   secondary={
                     <Box sx={{ mt: 2 }}>
                       <Typography variant="body1" sx={{ mb: 1 }}>
-                        {report.incident_details?.description || t("notAvailable")}
+                        {report.incident_details?.description || "Not available"}
                       </Typography>
                       <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
                         <Chip
-                          label={report.status || t("notAvailable")}
+                          label={report.status || "Unknown"}
                           size="small"
                           sx={{
                             backgroundColor: alpha('#1976d2', 0.1),
@@ -158,7 +153,7 @@ function ReportsPage() {
             }}
           >
             <Typography variant="h6" color="text.secondary">
-              {t("noReports")}
+              No reports available.
             </Typography>
           </Paper>
         )}

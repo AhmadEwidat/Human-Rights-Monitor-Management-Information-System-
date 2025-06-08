@@ -21,15 +21,12 @@ import CasesList from './pages/CasesList';
 import AdminReports from './pages/AdminReports';
 import Statistics from './pages/Statistics';
 import InstitutionProfile from './pages/InstitutionProfile';
-
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import ReportsPage from './pages/ReportsPage';
 import ManageCases from './pages/ManageCases';
 import CreateCasePage from './pages/CreateNewCase';
 import UpdateCase from './pages/UpdateCase';
+
 import './index.css';
- import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 function AppLayout() {
@@ -50,17 +47,22 @@ function AppLayout() {
 
   const hideNavbarPaths = ['/login'];
 
+  const renderNavbar = () => {
+    if (hideNavbarPaths.includes(pathname)) return null;
+    if (role === 'admin') return <AdminNavbar />;
+    if (role === 'institution') return <InstitutionNavbar />;
+    return <Navbar />;
+  };
+
   return (
     <>
-      {!hideNavbarPaths.includes(pathname) && (
-        role === 'admin' ? <AdminNavbar /> : role === 'institution' ? <InstitutionNavbar /> : <Navbar />
-      )}
+      {renderNavbar()}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin-welcome" element={<AdminWelcome />} />
-        <Route path="/institution-dashboard" element={<InstitutionWelcome />} />
+        <Route path="/institution-welcome" element={<InstitutionWelcome />} />
         <Route path="/institution-my-cases" element={<CasesList />} />
         <Route path="/institution-create-new-case" element={<SubmitReportForm />} />
         <Route path="/institution-create-report/:caseId" element={<SubmitReportForm />} />

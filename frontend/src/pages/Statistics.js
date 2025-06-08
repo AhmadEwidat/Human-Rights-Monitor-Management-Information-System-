@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 
 function Statistics() {
-  const { t, i18n } = useTranslation();
   const [stats, setStats] = useState({ new: 0, underInvestigation: 0, resolved: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,7 +31,7 @@ function Statistics() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
     } catch (err) {
-      setError(t("fetchError") + ": " + err.message);
+      setError("Failed to fetch statistics: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -41,16 +39,16 @@ function Statistics() {
 
   return (
     <div style={{ padding: "2rem", textAlign: "center" }}>
-      <h2>{t("statistics") || "إحصائيات"}</h2>
+      <h2>Statistics</h2>
       {loading ? (
-        <p>{t("loading")}</p>
+        <p>Loading...</p>
       ) : error ? (
         <p style={{ color: "red" }}>{error}</p>
       ) : (
         <div>
-          <p>{t("new")}: {stats.new}</p>
-          <p>{t("underInvestigation")}: {stats.underInvestigation}</p>
-          <p>{t("resolved")}: {stats.resolved}</p>
+          <p>New: {stats.new}</p>
+          <p>Under Investigation: {stats.underInvestigation}</p>
+          <p>Resolved: {stats.resolved}</p>
         </div>
       )}
     </div>

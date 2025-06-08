@@ -1,4 +1,3 @@
-// 📁 src/pages/ManageCases.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -28,6 +27,28 @@ import AddIcon from '@mui/icons-material/Add';
 
 const MotionPaper = motion(Paper);
 
+// ✅ Centralized static text (optional)
+const TEXT = {
+  pageTitle: 'Manage Cases',
+  createButton: 'Create New Case',
+  filters: {
+    region: 'Filter by region',
+    status: 'Filter by status',
+    violation: 'Filter by violation',
+  },
+  tableHeaders: ['Case ID', 'Title', 'Status', 'Priority', 'Date Reported', 'Actions'],
+  emptyMessage: 'No cases found.',
+  tooltips: {
+    view: 'View Details',
+    edit: 'Edit Case',
+    archive: 'Archive Case',
+  },
+  confirmations: {
+    archive: 'Are you sure you want to archive this case?',
+    unarchive: 'Do you want to unarchive this case?',
+  },
+};
+
 const ManageCases = () => {
   const [cases, setCases] = useState([]);
   const [filter, setFilter] = useState({ status: '', region: '', violation_type: '' });
@@ -51,8 +72,8 @@ const ManageCases = () => {
   const toggleArchive = async (id, currentStatus) => {
     const isArchived = currentStatus === "archived";
     const confirmText = isArchived
-      ? "Do you want to unarchive this case?"
-      : "Are you sure you want to archive this case?";
+      ? TEXT.confirmations.unarchive
+      : TEXT.confirmations.archive;
 
     if (!window.confirm(confirmText)) return;
 
@@ -66,13 +87,10 @@ const ManageCases = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to archive this case?")) return;
+    if (!window.confirm(TEXT.confirmations.archive)) return;
     try {
       await axios.delete(`http://localhost:8000/cases/${id}`);
-      const response = await axios.get('http://localhost:8000/cases/', {
-        params: filter
-      });
-      setCases(response.data);
+      fetchCases();
     } catch (error) {
       console.error("Error archiving case:", error);
     }
@@ -119,7 +137,7 @@ const ManageCases = () => {
               },
             }}
           >
-            Manage Cases
+            {TEXT.pageTitle}
           </Typography>
           <Button
             variant="contained"
@@ -132,7 +150,7 @@ const ManageCases = () => {
               },
             }}
           >
-            Create New Case
+            {TEXT.createButton}
           </Button>
         </Box>
 
@@ -148,21 +166,21 @@ const ManageCases = () => {
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
               fullWidth
-              label="Filter by region"
+              label={TEXT.filters.region}
               value={filter.region}
               onChange={(e) => setFilter({ ...filter, region: e.target.value })}
               size="small"
             />
             <TextField
               fullWidth
-              label="Filter by status"
+              label={TEXT.filters.status}
               value={filter.status}
               onChange={(e) => setFilter({ ...filter, status: e.target.value })}
               size="small"
             />
             <TextField
               fullWidth
-              label="Filter by violation"
+              label={TEXT.filters.violation}
               value={filter.violation_type}
               onChange={(e) => setFilter({ ...filter, violation_type: e.target.value })}
               size="small"
@@ -181,19 +199,16 @@ const ManageCases = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Case ID</TableCell>
-                <TableCell>Title</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Priority</TableCell>
-                <TableCell>Date Reported</TableCell>
-                <TableCell>Actions</TableCell>
+                {TEXT.tableHeaders.map((header) => (
+                  <TableCell key={header}>{header}</TableCell>
+                ))}
               </TableRow>
             </TableHead>
             <TableBody>
               {cases.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                    <Typography color="text.secondary">No cases found.</Typography>
+                    <Typography color="text.secondary">{TEXT.emptyMessage}</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -206,27 +221,18 @@ const ManageCases = () => {
                     <TableCell>{new Date(c.date_reported).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <Stack direction="row" spacing={1}>
-                        <Tooltip title="View Details">
-                          <IconButton
-                            onClick={() => navigate(`/cases/${c._id}`)}
-                            sx={{ color: '#1976d2' }}
-                          >
+                        <Tooltip title={TEXT.tooltips.view}>
+                          <IconButton onClick={() => navigate(`/cases/${c._id}`)} sx={{ color: '#1976d2' }}>
                             <VisibilityIcon />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="Edit Case">
-                          <IconButton
-                            onClick={() => navigate(`/cases/${c._id}/update`)}
-                            sx={{ color: '#1976d2' }}
-                          >
+                        <Tooltip title={TEXT.tooltips.edit}>
+                          <IconButton onClick={() => navigate(`/cases/${c._id}/update`)} sx={{ color: '#1976d2' }}>
                             <EditIcon />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="Archive Case">
-                          <IconButton
-                            onClick={() => handleDelete(c._id)}
-                            sx={{ color: '#d32f2f' }}
-                          >
+                        <Tooltip title={TEXT.tooltips.archive}>
+                          <IconButton onClick={() => handleDelete(c._id)} sx={{ color: '#d32f2f' }}>
                             <DeleteIcon />
                           </IconButton>
                         </Tooltip>

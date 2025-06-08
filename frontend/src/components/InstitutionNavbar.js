@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { NavLink, useNavigate } from 'react-router-dom';
-import './InstitutionNavbar.css'; // تأكد أنه نفس التصميم النهائي من navbar.css
+import './InstitutionNavbar.css';
 import logo from '../assets/logo.png';
 
 function InstitutionNavbar() {
   const [darkMode, setDarkMode] = useState(false);
-  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   const toggleDarkMode = () => {
@@ -14,14 +12,10 @@ function InstitutionNavbar() {
     setDarkMode(!darkMode);
   };
 
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'en' ? 'ar' : 'en';
-    i18n.changeLanguage(newLang);
-  };
-
   useEffect(() => {
-    document.body.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
-  }, [i18n.language]);
+    // يمكنك ضبط RTL يدويًا لو حبيت
+    document.body.dir = 'ltr';
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('jwt_token');
@@ -33,22 +27,18 @@ function InstitutionNavbar() {
     <>
       <div className="top-bar">
         <div className="top-actions">
-          <span className="language-switch" onClick={toggleLanguage}>
+          <span className="language-switch" onClick={() => alert("Language switching is disabled.")}>
             🌐 EN / AR
           </span>
           <button className="dark-mode-toggle" onClick={toggleDarkMode}>
-            🌙 {darkMode ? t('lightMode') : t('darkMode')}
+            🌙 {darkMode ? 'Light Mode' : 'Dark Mode'}
           </button>
         </div>
       </div>
 
       <nav className="inst-nav">
         <div className="navbar-left">
-          <img
-            src={logo}
-            alt="Logo"
-            className="navbar-logo"
-          />
+          <img src={logo} alt="Logo" className="navbar-logo" />
         </div>
 
         <span className="inst-nav__logo">
@@ -56,16 +46,16 @@ function InstitutionNavbar() {
         </span>
 
         <ul className="inst-nav__links">
-          <li><NavLink to="/institution-dashboard">{t('dashboard')}</NavLink></li>
-          <li><NavLink to="institution-create-new-case">{t('createCase')}</NavLink></li>
-          <li><NavLink to="/institution-my-cases">{t('myCases')}</NavLink></li>
-          <li><NavLink to="/institution-reports">{t('reports')}</NavLink></li>
-          <li><NavLink to="/institution-profile">{t('profile')}</NavLink></li>
-          <li><NavLink to="/institution-settings">{t('settings')}</NavLink></li>
+          <li><NavLink to="/institution-dashboard">Dashboard</NavLink></li>
+          <li><NavLink to="/institution-create-new-case">Create Case</NavLink></li>
+          <li><NavLink to="/institution-my-cases">My Cases</NavLink></li>
+          <li><NavLink to="/institution-reports">Reports</NavLink></li>
+          <li><NavLink to="/institution-profile">Profile</NavLink></li>
+          <li><NavLink to="/institution-settings">Settings</NavLink></li>
         </ul>
 
         <button className="inst-nav__logout" onClick={handleLogout}>
-          {t('logout')}
+          Logout
         </button>
       </nav>
     </>

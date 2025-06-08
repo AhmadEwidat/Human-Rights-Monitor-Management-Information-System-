@@ -1,5 +1,6 @@
-// pages/Dashboard.jsx
 import React from 'react';
+import { motion } from 'framer-motion'; // ✅ أضف هذا السطر أولاً
+
 import {
   Box,
   Container,
@@ -13,13 +14,13 @@ import {
   CardContent,
   CardActions,
 } from '@mui/material';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import DescriptionIcon from '@mui/icons-material/Description';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import PeopleIcon from '@mui/icons-material/People';
 
-const MotionPaper = motion(Paper);
+const MotionPaper = motion(Paper); // أو motion.create(Paper) لو كنت متأكد أنك تستخدم v11+
+
 const MotionCard = motion(Card);
 
 const Dashboard = () => {
@@ -27,19 +28,19 @@ const Dashboard = () => {
 
   const quickActions = [
     {
-      title: 'View Cases',
+      title: 'Cases',
       description: 'Browse and manage all cases',
       icon: <DescriptionIcon sx={{ fontSize: 40, color: '#1976d2' }} />,
       action: () => navigate('/cases-list'),
     },
     {
-      title: 'Create Report',
+      title: 'Report',
       description: 'Submit a new case report',
       icon: <AssessmentIcon sx={{ fontSize: 40, color: '#1976d2' }} />,
       action: () => navigate('/submit-report'),
     },
     {
-      title: 'Manage Users',
+      title: 'Users',
       description: 'View and manage system users',
       icon: <PeopleIcon sx={{ fontSize: 40, color: '#1976d2' }} />,
       action: () => navigate('/users'),
@@ -77,7 +78,7 @@ const Dashboard = () => {
             },
           }}
         >
-          Welcome to the Dashboard 🧭
+          Dashboard
         </Typography>
 
         <Grid container spacing={3}>

@@ -16,15 +16,19 @@ from pydantic import BaseModel
 
 # إعداد الراوتر
 router = APIRouter()
+
+# ✅ تعديل هنا
 class StatusUpdate(BaseModel):
-    status: str  # حقل إلزامي
-    comment: str | None = None
+    status: str
+    comment: Optional[str] = None
+
 # إعدادات الاتصال بقاعدة البيانات
 uri = "mongodb+srv://asma:asmaasma@cluster0.kbgepxe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 client = MongoClient(uri, server_api=ServerApi('1'))
 db = client["human_rights_mis"]
 reports_collection = db["incident_reports"]
 evidence_collection = db["report_evidence"]
+
 
 # إعداد مجلد الرفع
 UPLOAD_DIR = "uploaded_evidence"

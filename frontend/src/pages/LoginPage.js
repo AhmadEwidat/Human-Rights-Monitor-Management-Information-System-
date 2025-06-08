@@ -1,22 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "./LoginPage.css";
 import illustration from "../assets/loginLogo.jpg";
-import { useTranslation } from "react-i18next";
-import i18n from "../i18n";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
 const LoginPage = () => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    document.body.dir = i18n.language === "ar" ? "rtl" : "ltr";
-  }, [i18n.language]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -33,34 +26,29 @@ const LoginPage = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.detail || t("loginFailed"));
+        setError(data.detail || "Login failed. Please try again.");
         setIsLoading(false);
         return;
       }
 
-      // ✅ تخزين التوكن
       localStorage.setItem("jwt_token", data.access_token);
 
-      // ✅ استخراج البيانات من التوكن
       const decoded = jwtDecode(data.access_token);
       const userRole = decoded.role ? decoded.role.toLowerCase() : "";
       const userId = decoded.sub;
       const usernameFromToken = decoded.username;
 
-      // ✅ التحقق من صلاحية التوكن (اختياري)
       const currentTime = Date.now() / 1000;
       if (decoded.exp < currentTime) {
-        setError(t("tokenExpired"));
+        setError("Token expired. Please log in again.");
         setIsLoading(false);
         return;
       }
 
-      // ✅ تخزين البيانات في localStorage
       localStorage.setItem("user_id", userId);
       localStorage.setItem("username", usernameFromToken);
       localStorage.setItem("role", userRole);
 
-      // ✅ التوجيه حسب الدور
       if (userRole === "admin") {
         navigate("/admin-welcome");
       } else if (userRole === "institution") {
@@ -69,7 +57,7 @@ const LoginPage = () => {
         navigate("/login");
       }
     } catch (err) {
-      setError(t("serverError"));
+      setError("Server error. Please try again later.");
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -84,13 +72,13 @@ const LoginPage = () => {
             Monitor Palestine 360
           </h1>
           <h3 className="login-title" style={{ textAlign: "center", color: "#888", marginBottom: "25px" }}>
-            {t("institutionLogin")}
+            Institution Login
           </h3>
           {error && <p className="error" style={{ color: "red", textAlign: "center" }}>{error}</p>}
           <form className="login-form" onSubmit={handleLogin}>
             <input
               type="text"
-              placeholder={t("username")}
+              placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -98,7 +86,7 @@ const LoginPage = () => {
             />
             <input
               type="password"
-              placeholder={t("password")}
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -106,10 +94,10 @@ const LoginPage = () => {
             />
             <div className="login-options">
               <label>
-                <input type="checkbox" disabled={isLoading} /> {t("remember")}
+                <input type="checkbox" disabled={isLoading} /> Remember Me
               </label>
               <a href="#" className="forgot-password">
-                {t("forgot")}
+                Forgot Password?
               </a>
             </div>
             <button
@@ -129,7 +117,7 @@ const LoginPage = () => {
               }}
               disabled={isLoading}
             >
-              {isLoading ? t("loading") : t("submit")}
+              {isLoading ? "Loading..." : "Login"}
             </button>
           </form>
         </div>

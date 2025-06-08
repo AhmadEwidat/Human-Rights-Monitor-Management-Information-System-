@@ -13,46 +13,29 @@ import {
   Alert,
   TextField,
   Divider,
-  IconButton,
-  Tabs,
-  Tab,
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import PhoneIcon from '@mui/icons-material/Phone';
-import EmailIcon from '@mui/icons-material/Email';
-import LanguageIcon from '@mui/icons-material/Language';
 import BusinessIcon from '@mui/icons-material/Business';
 
 const MotionPaper = motion(Paper);
 
 const InstitutionProfile = () => {
-  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [currentLang, setCurrentLang] = useState(i18n.language === 'en-US' ? 'en' : i18n.language);
   const [profileData, setProfileData] = useState({
-    institution_name: {
-      ar: '',
-      en: ''
-    },
+    institution_name: '',
     username: '',
-    active: true
+    active: true,
   });
 
   useEffect(() => {
     fetchProfileData();
   }, []);
-
-  useEffect(() => {
-    setCurrentLang(i18n.language === 'en-US' ? 'en' : i18n.language);
-  }, [i18n.language]);
 
   const fetchProfileData = async () => {
     setLoading(true);
@@ -60,42 +43,32 @@ const InstitutionProfile = () => {
     setSuccessMessage(null);
     try {
       const token = localStorage.getItem('jwt_token');
-      if (!token) {
-        console.error('No JWT token found in localStorage');
-        throw new Error('Authentication token not found. Please log in again.');
-      }
+      if (!token) throw new Error('Authentication token not found. Please log in again.');
 
-      console.log('Fetching profile data with token:', token.substring(0, 20) + '...');
-      
       const response = await fetch('http://localhost:8000/institution/profile/', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
-      
-      console.log('Profile response status:', response.status);
-      
-      if (response.status === 401) {
-        console.error('Authentication failed - token may be invalid or expired');
-        throw new Error('Your session has expired. Please log in again.');
-      } else if (!response.ok) {
+
+      if (response.status === 401) throw new Error('Your session has expired. Please log in again.');
+      if (!response.ok) {
         const errorData = await response.json();
-        console.error('Profile fetch error:', errorData);
         throw new Error(errorData.detail || 'Failed to fetch profile data');
       }
 
       const data = await response.json();
-      console.log('Profile data received:', data);
-      setProfileData(data);
-      
-      // Check if this is a new profile (all fields are empty)
-      const isEmptyProfile = Object.values(data.institution_name).every(value => !value);
-      if (isEmptyProfile) {
+      setProfileData({
+        institution_name: data.institution_name?.en || '',
+        username: data.username || '',
+        active: data.active,
+      });
+
+      if (!data.institution_name?.en) {
         setSuccessMessage('Welcome! Please complete your profile information.');
       }
     } catch (err) {
-      console.error('Profile fetch error:', err);
       setError(err.message);
       if (err.message.includes('session has expired') || err.message.includes('token not found')) {
         setTimeout(() => {
@@ -108,53 +81,46 @@ const InstitutionProfile = () => {
     }
   };
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
+  const handleEdit = () => setIsEditing(true);
   const handleCancel = () => {
     setIsEditing(false);
-    fetchProfileData(); // Reset to original data
+    fetchProfileData();
   };
 
   const handleSave = async () => {
     try {
       const token = localStorage.getItem('jwt_token');
-      if (!token) {
-        console.error('No JWT token found in localStorage');
-        throw new Error('Authentication token not found. Please log in again.');
-      }
+      if (!token) throw new Error('Authentication token not found. Please log in again.');
 
-      console.log('Updating profile with token:', token.substring(0, 20) + '...');
-      
       const response = await fetch('http://localhost:8000/institution/profile/update/', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(profileData),
+        body: JSON.stringify({
+          institution_name: { en: profileData.institution_name },
+          username: profileData.username,
+          active: profileData.active,
+        }),
       });
 
-      console.log('Update response status:', response.status);
-      
-      if (response.status === 401) {
-        console.error('Authentication failed during update - token may be invalid or expired');
-        throw new Error('Your session has expired. Please log in again.');
-      } else if (!response.ok) {
+      if (response.status === 401) throw new Error('Your session has expired. Please log in again.');
+      if (!response.ok) {
         const errorData = await response.json();
-        console.error('Profile update error:', errorData);
         throw new Error(errorData.detail || 'Failed to update profile');
       }
 
       const updatedData = await response.json();
-      console.log('Profile updated successfully:', updatedData);
-      setProfileData(updatedData);
+      setProfileData({
+        institution_name: updatedData.institution_name?.en || '',
+        username: updatedData.username || '',
+        active: updatedData.active,
+      });
       setIsEditing(false);
       setSuccessMessage('Profile updated successfully!');
       setError(null);
     } catch (err) {
-      console.error('Profile update error:', err);
       setError(err.message);
       if (err.message.includes('session has expired') || err.message.includes('token not found')) {
         setTimeout(() => {
@@ -165,13 +131,10 @@ const InstitutionProfile = () => {
     }
   };
 
-  const handleInputChange = (field, lang, value) => {
+  const handleInputChange = (field, value) => {
     setProfileData(prev => ({
       ...prev,
-      [field]: {
-        ...prev[field],
-        [lang]: value
-      }
+      [field]: value,
     }));
   };
 
@@ -214,20 +177,11 @@ const InstitutionProfile = () => {
             },
           }}
         >
-          {t('institutionProfile')}
+          Institution Profile
         </Typography>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
-        )}
-
-        {successMessage && (
-          <Alert severity="success" sx={{ mb: 3 }}>
-            {successMessage}
-          </Alert>
-        )}
+        {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+        {successMessage && <Alert severity="success" sx={{ mb: 3 }}>{successMessage}</Alert>}
 
         <MotionPaper
           initial={{ opacity: 0, y: 20 }}
@@ -243,7 +197,6 @@ const InstitutionProfile = () => {
           }}
         >
           <Grid container spacing={4}>
-            {/* Profile Header */}
             <Grid item xs={12}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 3 }}>
                 <Avatar
@@ -259,7 +212,7 @@ const InstitutionProfile = () => {
                 </Avatar>
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="h5" sx={{ color: '#1565c0', fontWeight: 600 }}>
-                    {profileData.institution_name[currentLang]}
+                    {profileData.institution_name}
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
                     {profileData.username}
@@ -277,7 +230,7 @@ const InstitutionProfile = () => {
                       },
                     }}
                   >
-                    {t('editProfile')}
+                    Edit Profile
                   </Button>
                 ) : (
                   <Stack direction="row" spacing={2}>
@@ -292,7 +245,7 @@ const InstitutionProfile = () => {
                         },
                       }}
                     >
-                      {t('save')}
+                      Save
                     </Button>
                     <Button
                       variant="outlined"
@@ -307,7 +260,7 @@ const InstitutionProfile = () => {
                         },
                       }}
                     >
-                      {t('cancel')}
+                      Cancel
                     </Button>
                   </Stack>
                 )}
@@ -319,27 +272,13 @@ const InstitutionProfile = () => {
             </Grid>
 
             <Grid item xs={12}>
-              <Tabs
-                value={currentLang}
-                onChange={(e, newValue) => setCurrentLang(newValue)}
-                sx={{ mb: 3 }}
-              >
-                <Tab value="en" label="English" />
-                <Tab value="ar" label="العربية" />
-              </Tabs>
-            </Grid>
-
-            <Grid item xs={12}>
               <Stack spacing={3}>
                 <TextField
-                  label={t('institutionName')}
-                  value={profileData.institution_name[currentLang]}
-                  onChange={(e) => handleInputChange('institution_name', currentLang, e.target.value)}
+                  label="Institution Name"
+                  value={profileData.institution_name}
+                  onChange={(e) => handleInputChange('institution_name', e.target.value)}
                   disabled={!isEditing}
                   fullWidth
-                  InputProps={{
-                    startAdornment: <BusinessIcon sx={{ color: '#1976d2', mr: 1 }} />,
-                  }}
                 />
               </Stack>
             </Grid>
@@ -350,4 +289,4 @@ const InstitutionProfile = () => {
   );
 };
 
-export default InstitutionProfile; 
+export default InstitutionProfile;

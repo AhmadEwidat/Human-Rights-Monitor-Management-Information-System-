@@ -9,25 +9,26 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict
 from bson import ObjectId
 import logging
+from fastapi.staticfiles import StaticFiles
 
-# Configure logging
+# إعداد اللوج
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-from routes.report import router as report_router
-from routes.cases import router as cases_router
-from fastapi.staticfiles import StaticFiles
-
+# إنشاء التطبيق
 app = FastAPI()
 
-# Include routers
+# تضمين المسارات (routers)
+from routes.report import router as report_router
+from routes.cases import router as cases_router
+
 app.include_router(report_router, prefix="/reports")
 app.include_router(cases_router)
 
-# Static files
+# الملفات الثابتة
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
-# Enable CORS
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -36,7 +37,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# MongoDB connection
+# الاتصال بـ MongoDB
 client = MongoClient(
     "mongodb+srv://asma:asmaasma@cluster0.kbgepxe.mongodb.net/"
     "human_rights_mis?retryWrites=true&w=majority"
@@ -46,26 +47,25 @@ users = db["users"]
 case_types = db["case_types"]
 institutions = db["institutions"]
 
-# JWT settings
+# إعدادات JWT
 SECRET_KEY = "secret123"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
-# OAuth2 scheme for token authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Models
+# النماذج
 class LoginRequest(BaseModel):
     username: str
     password: str
 
 class InstitutionProfile(BaseModel):
-    institution_name: Dict[str, str]  # {ar: string, en: string}
+    institution_name: Dict[str, str]
     username: str
     active: bool = True
     created_at: Optional[datetime] = None
 
-# Helper function to get current institution
+# استخراج المؤسسة الحالية من التوكن
 async def get_current_institution(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -76,63 +76,37 @@ async def get_current_institution(token: str = Depends(oauth2_scheme)):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         institution_id: str = payload.get("sub")
         role: str = payload.get("role")
-        
-        if institution_id is None:
-            logger.error("No institution ID in token payload")
+
+        if institution_id is None or role != "institution":
             raise credentials_exception
-            
-        if role != "institution":
-            logger.error(f"Invalid role: {role}. Expected: institution")
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Access denied. Institution role required."
-            )
-            
     except jwt.ExpiredSignatureError:
-        logger.error("Token has expired")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired",
+            detail="انتهت صلاحية الرمز",
             headers={"WWW-Authenticate": "Bearer"},
         )
     except jwt.JWTError as e:
-        logger.error(f"JWT decode error: {str(e)}")
         raise credentials_exception
-    
+
     try:
         institution = users.find_one({"_id": ObjectId(institution_id), "role": "institution"})
         if institution is None:
-            logger.error(f"No institution found with ID: {institution_id}")
             raise credentials_exception
         return institution
     except Exception as e:
-        logger.error(f"Database error while fetching institution: {str(e)}")
         raise credentials_exception
 
+# تسجيل الدخول
 @app.post("/login")
 async def login_user(user: LoginRequest):
     try:
-        # Find the user by username
         found_user = users.find_one({"username": user.username})
         if not found_user:
-            logger.warning(f"Login attempt failed: User not found for username {user.username}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password"
-            )
+            raise HTTPException(status_code=401, detail="اسم المستخدم أو كلمة المرور غير صحيحة")
 
-        # Verify password
-        if not bcrypt.checkpw(
-            user.password.encode("utf-8"),
-            found_user["password_hash"].encode("utf-8")
-        ):
-            logger.warning(f"Login attempt failed: Invalid password for username {user.username}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password"
-            )
+        if not bcrypt.checkpw(user.password.encode("utf-8"), found_user["password_hash"].encode("utf-8")):
+            raise HTTPException(status_code=401, detail="اسم المستخدم أو كلمة المرور غير صحيحة")
 
-        # Create access token
         expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         payload = {
             "sub": str(found_user["_id"]),
@@ -141,7 +115,6 @@ async def login_user(user: LoginRequest):
             "exp": expire
         }
         access_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-        logger.info(f"Successful login for user: {user.username} with role: {found_user['role']}")
 
         return {
             "access_token": access_token,
@@ -149,9 +122,9 @@ async def login_user(user: LoginRequest):
             "role": found_user["role"]
         }
     except Exception as e:
-        logger.error(f"Login error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# استعراض جميع المستخدمين
 @app.get("/users")
 async def get_users():
     data = []
@@ -161,28 +134,26 @@ async def get_users():
         data.append(user)
     return {"users": data}
 
+# استعراض أنواع القضايا
 @app.get("/case-types")
 async def get_case_types():
     types = list(case_types.find({}, {"_id": 0}))
     return types
 
+# اختبار الاتصال
 @app.get("/ping")
 async def ping():
     return {"status": "ok"}
 
-# Institution Profile Endpoints
+# الحصول على بروفايل المؤسسة
 @app.get("/institution/profile/")
 async def get_institution_profile(current_institution: dict = Depends(get_current_institution)):
     try:
         profile = users.find_one({"_id": current_institution["_id"]})
         if not profile:
-            # Create a default profile if none exists
             default_profile = {
                 "_id": current_institution["_id"],
-                "institution_name": {
-                    "ar": "",
-                    "en": ""
-                },
+                "institution_name": {"ar": "", "en": ""},
                 "username": current_institution.get("username", ""),
                 "active": True,
                 "created_at": datetime.utcnow()
@@ -193,13 +164,13 @@ async def get_institution_profile(current_institution: dict = Depends(get_curren
                 upsert=True
             )
             profile = default_profile
-        
+
         profile["_id"] = str(profile["_id"])
         return profile
     except Exception as e:
-        logger.error(f"Error in get_institution_profile: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# تحديث بروفايل المؤسسة
 @app.put("/institution/profile/update/")
 async def update_institution_profile(
     profile_data: InstitutionProfile,
@@ -212,11 +183,10 @@ async def update_institution_profile(
             {"$set": update_data}
         )
         if result.modified_count == 0:
-            raise HTTPException(status_code=404, detail="Institution profile not found")
-        
+            raise HTTPException(status_code=404, detail="لم يتم العثور على بروفايل المؤسسة")
+
         updated_profile = users.find_one({"_id": current_institution["_id"]})
         updated_profile["_id"] = str(updated_profile["_id"])
         return updated_profile
     except Exception as e:
-        logger.error(f"Error in update_institution_profile: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
