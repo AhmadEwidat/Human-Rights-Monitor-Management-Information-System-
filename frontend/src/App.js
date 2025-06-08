@@ -29,7 +29,6 @@ import ManageCases from './pages/ManageCases';
 import CreateCasePage from './pages/CreateNewCase';
 import UpdateCase from './pages/UpdateCase';
 import './index.css';
- import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 function AppLayout() {

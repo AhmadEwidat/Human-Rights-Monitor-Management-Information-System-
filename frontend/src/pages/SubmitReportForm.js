@@ -1,8 +1,72 @@
 import React, { useState, useEffect } from "react";
-import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+
+// Fix for default marker icon
+const icon = L.icon({
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+function LocationPicker({ value, onChange }) {
+  const [position, setPosition] = useState(value || [31.5, 34.47]);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const coords = [pos.coords.latitude, pos.coords.longitude];
+          setPosition(coords);
+          if (onChange) onChange(coords);
+        },
+        () => {},
+        { enableHighAccuracy: true }
+      );
+    }
+  }, []);
+
+  function LocationMarker() {
+    useMapEvents({
+      click(e) {
+        const newPosition = [e.latlng.lat, e.latlng.lng];
+        setPosition(newPosition);
+        if (onChange) onChange(newPosition);
+      },
+    });
+    return position ? <Marker position={position} icon={icon} /> : null;
+  }
+
+  return (
+    <div style={{ margin: "24px 0" }}>
+      <MapContainer
+        center={position}
+        zoom={8}
+        style={{ height: 300, width: "100%" }}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <LocationMarker />
+      </MapContainer>
+      <div style={{ marginTop: 8, fontSize: 14, color: "#374151" }}>
+        الإحداثيات: {position[0].toFixed(6)}, {position[1].toFixed(6)}
+      </div>
+    </div>
+  );
+}
 
 function SubmitReportForm() {
+  const navigate = useNavigate();
   const [isNewCase, setIsNewCase] = useState(true); // Simulated
   const [violationOptions, setViolationOptions] = useState([
     { name_en: "Physical Violence" },
@@ -25,6 +89,7 @@ function SubmitReportForm() {
       description: "",
       violation_types: [],
       location_str: "",
+      coordinates: [31.5, 34.47],
     },
     pseudonym: "",
     evidence: [],
@@ -99,12 +164,60 @@ function SubmitReportForm() {
 
     setIsSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Report submitted:", reportData);
-      alert("Report submitted successfully!");
+    try {
+      // تحضير البيانات للإرسال
+      const formData = new FormData();
+      
+      // إضافة البيانات الأساسية
+      formData.append('reporter_type', reportData.reporter_type);
+      formData.append('anonymous', isAnonymous);
+      if (isAnonymous && reportData.pseudonym) {
+        formData.append('pseudonym', reportData.pseudonym);
+      }
+      
+      // إضافة معلومات الاتصال إذا لم يكن التقرير مجهولاً
+      if (!isAnonymous) {
+        formData.append('contact_info', JSON.stringify(reportData.contact_info));
+      }
+      
+      // إضافة تفاصيل الحادثة
+      const incidentDetails = {
+        ...reportData.incident_details,
+        coordinates: reportData.incident_details.coordinates
+      };
+      formData.append('incident_details', JSON.stringify(incidentDetails));
+      
+      // إضافة الموقع النصي
+      formData.append('location_str', reportData.incident_details.location_str);
+      
+      // إضافة الملفات
+      if (reportData.evidence && reportData.evidence.length > 0) {
+        Array.from(reportData.evidence).forEach(file => {
+          formData.append('evidence', file);
+        });
+      }
+
+      // إضافة معرف المستخدم (يمكن تعديله حسب احتياجاتك)
+      formData.append('created_by', 'anonymous_user');
+
+      // إرسال البيانات إلى الخادم
+      const response = await axios.post('/api/reports', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data) {
+        toast.success('تم إرسال التقرير بنجاح');
+        // إعادة توجيه المستخدم إلى صفحة التأكيد
+        navigate('/reports/success');
+      }
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      toast.error(error.response?.data?.detail || 'حدث خطأ أثناء إرسال التقرير');
+    } finally {
       setIsSubmitting(false);
-    }, 2000);
+    }
   };
 
   const styles = {
@@ -315,29 +428,6 @@ function SubmitReportForm() {
       gridColumn: '1 / -1'
     }
   };
-
-  function LocationPicker({ value, onChange }) {
-    const [position, setPosition] = useState(value || [31.5, 34.47]); // Default to Gaza/Palestine
-
-    function LocationMarker() {
-      useMapEvents({
-        click(e) {
-          setPosition([e.latlng.lat, e.latlng.lng]);
-          onChange([e.latlng.lat, e.latlng.lng]);
-        },
-      });
-      return position === null ? null : <Marker position={position} />;
-    }
-
-    return (
-      <MapContainer center={position} zoom={8} style={{ height: 300, width: '100%' }}>
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <LocationMarker />
-      </MapContainer>
-    );
-  }
 
   return (
     <div style={styles.container}>
@@ -600,6 +690,19 @@ function SubmitReportForm() {
                   📎 Selected files: {Array.from(reportData.evidence).map(f => f.name).join(', ')}
                 </div>
               )}
+            </div>
+
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>اختر الموقع على الخريطة</label>
+              <LocationPicker
+                value={reportData.incident_details.coordinates}
+                onChange={(coords) =>
+                  setReportData((prev) => ({
+                    ...prev,
+                    incident_details: { ...prev.incident_details, coordinates: coords },
+                  }))
+                }
+              />
             </div>
 
             <div style={styles.buttonGroup}>
