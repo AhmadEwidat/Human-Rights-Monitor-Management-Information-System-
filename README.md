@@ -1,5 +1,5 @@
 # 🛡️ Human Rights Monitor – MIS
-This is a university project for the COMP4382 course (Spring 2024/2025). It is a system to report and track human rights violations. The system has a backend using FastAPI and a frontend built with React.
+This is a university project for the COMP4382 course . It is a system to report and track human rights violations. The system has a backend using FastAPI and a frontend built with React.
 
 
 ## Project Structure
