@@ -10,7 +10,7 @@ This is a university project for the COMP4382 course . It is a system to report 
 
 ## How to Run the Project
 ### ▶️ Run the Backend
-➡️ cd backend ➡️ python -m venv venv ➡️ venv\Scripts\activate ➡️ uvicorn main:app --reload --port 8006
+➡️ cd backend ➡️ python -m venv venv ➡️ .\Scripts\activate ➡️ uvicorn main:app --reload --port 8006
 
 ### ▶️ Run the Frontend
 ➡️ cd frontend ➡️ npm install ➡️ npm start
