@@ -26,4 +26,4 @@ It connects to the backend at http://localhost:8006.
 - Asmaa Ankoush – Victim/Witness Database ( Task 3 )
 
 ## API Docs
-Swagger (FastAPI): http://localhost:8000/docs
+Swagger (FastAPI): http://localhost:8006/docs
